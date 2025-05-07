@@ -21,3 +21,4 @@ flask_session/
 
 # Logs
 *.log 
+app/ai/models/depression/model/model.safetensors
