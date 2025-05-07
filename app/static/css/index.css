@@ -1,0 +1,348 @@
+/* 메인 페이지 스타일 */
+:root {
+    --primary-color: #0A8D48;
+    --secondary-color: #FF6B00;
+    --background-color: #F8F8F8;
+    --text-color: #333333;
+    --border-color: #E5E5E5;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--background-color);
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    background-color: var(--background-color);
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 헤더 아이콘 스타일 */
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.notification-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* 메뉴 컨테이너 스타일 */
+.menu-container {
+    position: absolute;
+    top: 80px;
+    right: 16px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+    width: 200px;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-list li {
+    padding: 0;
+}
+
+.menu-list a {
+    display: block;
+    padding: 16px;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background-color 0.3s var(--transition-timing);
+    font-size: 16px;
+}
+
+.menu-list a:hover {
+    background-color: #f5f5f5;
+    color: var(--primary-color);
+}
+
+/* 알림 컨테이너 스타일 */
+.notification-container {
+    position: absolute;
+    top: 80px;
+    right: 16px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+    width: 300px;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.notification-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+}
+
+.notification-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-list li {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+}
+
+.notification-list li:last-child {
+    border-bottom: none;
+}
+
+.empty-notification {
+    padding: 24px 16px;
+    text-align: center;
+    color: #999;
+}
+
+/* 사용자 정보 섹션 스타일 */
+.user-info {
+    padding: 24px 16px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: 24px 16px;
+}
+
+.user-profile h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-profile p {
+    margin: 0;
+    color: #666;
+    font-size: 16px;
+}
+
+/* 메인 버튼 섹션 스타일 */
+.main-buttons {
+    padding: 16px;
+}
+
+.button-container {
+    display: flex;
+    gap: 16px;
+}
+
+.main-button {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background-color: white;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    cursor: pointer;
+    transition: all 0.3s var(--transition-timing);
+}
+
+.main-button:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 16px var(--shadow-color);
+}
+
+.main-button img {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+}
+
+.main-button span {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.diagnosis-button {
+    background-color: #E6F7EF;
+    color: var(--primary-color);
+}
+
+.chatbot-button {
+    background-color: #FFF3EB;
+    color: var(--secondary-color);
+}
+
+/* 캘린더 섹션 스타일 */
+.calendar-section {
+    padding: 24px 16px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    margin: 24px 16px;
+}
+
+.calendar-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+#calendar {
+    height: 400px;
+}
+
+/* 센터 섹션 스타일 */
+.center-section {
+    padding: 24px 16px;
+    background-color: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px var(--shadow-color);
+    margin: 24px 16px 40px 16px;
+}
+
+.center-section h3 {
+    margin: 0 0 16px 0;
+    font-size: 18px;
+    color: var(--text-color);
+}
+
+.center-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.center-card {
+    padding: 16px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px var(--shadow-color);
+}
+
+.center-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.center-card p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.center-card .center-address {
+    color: #888;
+    font-size: 13px;
+}
+
+.center-card .center-phone {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.center-loading {
+    text-align: center;
+    color: #888;
+    padding: 24px 0;
+}
+
+/* 반응형 스타일 */
+@media screen and (max-width: 480px) {
+    .button-container {
+        flex-direction: column;
+    }
+
+    .main-button {
+        padding: 20px 16px;
+    }
+
+    .main-button img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .user-info, .calendar-section, .center-section {
+        margin: 16px 12px;
+        padding: 20px 12px;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .user-info, .calendar-section, .center-section {
+        margin: 32px 24px;
+        padding: 32px 24px;
+    }
+
+    .main-buttons {
+        padding: 24px;
+    }
+
+    .main-button {
+        padding: 32px 24px;
+    }
+
+    .main-button img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .main-button span {
+        font-size: 18px;
+    }
+}
