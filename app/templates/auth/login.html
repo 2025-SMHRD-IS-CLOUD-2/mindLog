@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <div class="login-form">
+            <h1>로그인</h1>
+            <form id="loginForm" method="post" action="{{ url_for('auth.login') }}">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" name="user_id" placeholder="아이디를 입력해주세요" class="login-input" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="user_pw" placeholder="비밀번호를 입력해주세요" class="login-input" required>
+                    </div>
+                    <div class="find-link">
+                        <a href="{{ url_for('auth.find_password') }}">아이디/비밀번호 찾기</a>
+                    </div>
+                    <button type="submit" class="login-button">로그인</button>
+                    <button type="button" class="signup-button" id="signupBtn">회원가입</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/login.js') }}"></script>
+<script>
+  document.getElementById('signupBtn').onclick = function() {
+    location.href = "{{ url_for('auth.register') }}";
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <div class="join-form">
+            <h1>회원가입</h1>
+            <form id="joinForm" method="post" action="{{ url_for('auth.register') }}">
+                <div class="input-group">
+                    <input type="text" name="name" placeholder="닉네임을 입력해주세요" class="login-input" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" name="id" placeholder="아이디를 입력해주세요" class="login-input" required>
+                </div>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="비밀번호를 입력해주세요" class="login-input" required>
+                </div>
+                <div class="input-group">
+                    <input type="date" name="birthday" class="login-input" required>
+                </div>
+                <div class="input-group flex-group">
+                    <label class="radio-group">
+                        <input type="radio" name="gender" value="male" required>
+                        <span class="radio-text">남자</span>
+                    </label>
+                    <label class="radio-group">
+                        <input type="radio" name="gender" value="female" required>
+                        <span class="radio-text">여자</span>
+                    </label>
+                </div>
+                <button type="submit" class="login-button">가입하기</button>
+                <button type="button" class="signup-button" data-href="{{ url_for('auth.login') }}">로그인으로 돌아가기</button>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/join.js') }}"></script>
+{% endblock %}

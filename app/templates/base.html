@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title|default('mindLog - 청소년 정신 건강 솔루션') }}</title>
+    <!-- main.css만 참조 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <a href="{{ url_for('main.index') }}">
+                    <img src="{{ url_for('static', filename='assets/mindbridge_secure_logo.png') }}" alt="mindLog">
+                </a>
+            </div>
+            
+            {% if session.user_id %}
+            <div class="header-icons">
+                <button class="notification-toggle">
+                    <img src="{{ url_for('static', filename='assets/icons/notification.svg') }}" alt="알림" class="notification-icon">
+                </button>
+                <button class="menu-toggle" id="menuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+            {% else %}
+            <button class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            {% endif %}
+        </div>
+        
+        <!-- 메뉴 컨테이너 -->
+        <div class="menu-container" id="menuContainer">
+            <ul class="menu-list">
+                {% if session.user_id %}
+                <li><a href="{{ url_for('auth.profile') }}">내 정보</a></li>
+                <li><a href="{{ url_for('auth.logout') }}">로그아웃</a></li>
+                {% else %}
+                <li><a href="{{ url_for('auth.login') }}">로그인</a></li>
+                <li><a href="{{ url_for('auth.register') }}">회원가입</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <!-- 알림 컨테이너 -->
+        {% if session.user_id %}
+        <div class="notification-container" id="notificationContainer">
+            <div class="notification-header">
+                <h3>알림</h3>
+                <button class="close-notification">×</button>
+            </div>
+            <ul class="notification-list">
+                <!-- 알림 목록이 여기에 동적으로 추가됩니다 -->
+            </ul>
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- 플래시 메시지 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        {{ message }}
+                        <button class="close-flash">×</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- 메인 컨텐츠 -->
+    {% block content %}{% endblock %}
+
+    <!-- 자바스크립트 -->
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

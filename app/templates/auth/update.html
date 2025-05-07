@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <div class="join-form">
+            <h1>회원정보</h1>
+            <form id="updateForm" method="post" action="{{ url_for('auth.profile') }}">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" name="nickname" placeholder="닉네임" class="login-input" value="{{ user.nickname if user }}">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" name="user_id" placeholder="아이디" class="login-input" value="{{ user.username if user }}" readonly>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="current_password" placeholder="현재 비밀번호" class="login-input">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" name="password" placeholder="새 비밀번호" class="login-input">
+                    </div>
+                    <div class="input-group">
+                        <input type="date" name="birthday" class="login-input" value="{{ user.birthday.strftime('%Y-%m-%d') if user and user.birthday }}" readonly>
+                    </div>
+                    <div class="input-group flex-group">
+                        <label class="radio-group">
+                            <input type="radio" name="gender" value="male" {{ 'checked' if user and user.gender == 'male' }} disabled>
+                            <span class="radio-text">남자</span>
+                        </label>
+                        <label class="radio-group">
+                            <input type="radio" name="gender" value="female" {{ 'checked' if user and user.gender == 'female' }} disabled>
+                            <span class="radio-text">여자</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="login-button" id="editInfo">정보 수정</button>
+                    <button type="button" class="signup-button" id="deleteBtn">회원 탈퇴</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/join.js') }}"></script>
+<script>
+  document.getElementById('deleteBtn').onclick = function() {
+    location.href = "{{ url_for('auth.delete_account') }}";
+  }
+</script>
+{% endblock %}

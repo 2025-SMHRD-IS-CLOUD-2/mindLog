@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M52 8H48V4C48 2.9 47.1 2 46 2C44.9 2 44 2.9 44 4V8H20V4C20 2.9 19.1 2 18 2C16.9 2 16 2.9 16 4V8H12C8.7 8 6 10.7 6 14V52C6 55.3 8.7 58 12 58H52C55.3 58 58 55.3 58 52V14C58 10.7 55.3 8 52 8ZM54 52C54 53.1 53.1 54 52 54H12C10.9 54 10 53.1 10 52V24H54V52ZM54 20H10V14C10 12.9 10.9 12 12 12H16V16C16 17.1 16.9 18 18 18C19.1 18 20 17.1 20 16V12H44V16C44 17.1 44.9 18 46 18C47.1 18 48 17.1 48 16V12H52C53.1 12 54 12.9 54 14V20Z" fill="#4A90E2"/>
+    <rect x="16" y="30" width="8" height="8" rx="1" fill="#4A90E2"/>
+    <rect x="28" y="30" width="8" height="8" rx="1" fill="#4A90E2"/>
+    <rect x="40" y="30" width="8" height="8" rx="1" fill="#4A90E2"/>
+    <rect x="16" y="42" width="8" height="8" rx="1" fill="#4A90E2"/>
+    <rect x="28" y="42" width="8" height="8" rx="1" fill="#4A90E2"/>
+    <rect x="40" y="42" width="8" height="8" rx="1" fill="#4A90E2"/>
+</svg> 

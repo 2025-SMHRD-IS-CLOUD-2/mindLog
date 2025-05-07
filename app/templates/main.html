@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        {% if session.user_id %}
+        <!-- 로그인한 경우: 대시보드 화면 -->
+        <section class="user-info">
+            <div class="user-profile">
+                <h2><span id="userNickname">{{ user.nickname if user else '사용자' }}</span>님 · 함께한지 <span id="userDays">{{ user.days_joined if user else 0 }}</span>일</h2>
+            </div>
+        </section>
+
+        <section class="main-buttons">
+            <div class="button-container">
+                <button class="main-button diagnosis-button" onclick="location.href='{{ url_for('diagnosis.index') }}'">
+                    <img src="{{ url_for('static', filename='assets/icons/diagnosis.svg') }}" alt="우울증 자가진단">
+                    <span>우울증 자가진단</span>
+                </button>
+                <button class="main-button chatbot-button" onclick="location.href='{{ url_for('chatbot.index') }}'">
+                    <img src="{{ url_for('static', filename='assets/icons/chatbot.svg') }}" alt="챗봇">
+                    <span>챗봇</span>
+                </button>
+                <button class="main-button schedule-button" onclick="location.href='{{ url_for('counseling.index') }}'">
+                    <img src="{{ url_for('static', filename='assets/icons/calendar.svg') }}" alt="상담센터">
+                    <span>상담센터</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="calendar-section">
+            <h3>
+                <img src="{{ url_for('static', filename='assets/icons/calendar.svg') }}" alt="캘린더" class="section-icon">
+                나의 상담 일정
+            </h3>
+            <div id="calendar"></div>
+        </section>
+
+        <section class="center-section">
+            <h3>
+                <img src="{{ url_for('static', filename='assets/icons/diagnosis.svg') }}" alt="상담센터" class="section-icon">
+                주변 상담센터
+            </h3>
+            <div class="center-list" id="centerList">
+                {% if centers %}
+                    {% for center in centers %}
+                    <div class="center-card">
+                        <h4>{{ center.name }} ({{ center.distance }})</h4>
+                        <p class="center-type">{{ center.type }}</p>
+                        <p class="center-address">{{ center.address }}</p>
+                        <p class="center-phone">{{ center.phone }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="center-loading">센터 정보를 불러오는 중...</div>
+                {% endif %}
+            </div>
+        </section>
+
+        {% else %}
+        <!-- 로그아웃 상태: 랜딩 페이지 -->
+        <section class="user-section">
+            <div class="section-content">
+                <div class="text-content">
+                    <h2>청소년 정신 건강 통합 솔루션</h2>
+                    <p class="subtitle">AI 기반 자가진단과 상담 서비스로 마음 건강을 지켜드립니다.</p>
+                    <ul class="feature-list">
+                        <li><span class="icon">✓</span> 표준화된 우울증 자가진단</li>
+                        <li><span class="icon">✓</span> AI 챗봇 마음 상담</li>
+                        <li><span class="icon">✓</span> 지역별 전문 상담센터 연계</li>
+                    </ul>
+                    <a href="{{ url_for('auth.login') }}" class="start-button">시작하기</a>
+                </div>
+                <div class="image-content">
+                    <img src="{{ url_for('static', filename='assets/images/main_img.jpg') }}" alt="청소년 정신 건강">
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 캘린더 관련 스크립트 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('calendar')) {
+            const events = {
+                {% if appointments %}
+                {% for appointment in appointments %}
+                '{{ appointment.appointment_date.strftime('%Y-%m-%d') }}': { 
+                    title: '{{ appointment.center_name }}', 
+                    time: '{{ appointment.appointment_time.strftime('%H:%M') }}', 
+                    color: '#FF6B00'
+                },
+                {% endfor %}
+                {% else %}
+                '2025-05-15': { title: '상담 예약', time: '14:00', color: '#FF6B00' }
+                {% endif %}
+            };
+
+            // 캘린더 렌더링 함수
+            // (index.js 파일에 구현된 함수를 사용)
+        }
+    });
+</script>
+{% endblock %}
