@@ -5,7 +5,10 @@ let currMonth = date.getMonth()+1;
 let today = date.getDate();
 let weekday = date.getDay();
 let WrapDay = document.getElementById("wrap_day");
+let scheduleDate = document.getElementById("scheduleDate");
+let schedule = document.getElementById("schedule");
 function calendar(year,currMonth,today) {
+    WrapDay.innerHTML = ""
     let month = document.getElementsByClassName("month");
     let calendar = document.getElementById("calendar");
     let tMFD = new Date(year,currMonth-1,1); // 이번달 첫날짜 데이터
@@ -64,6 +67,7 @@ function calendar(year,currMonth,today) {
             days.setAttribute("class","days");
             days.innerHTML = `<span>${i - tMFD.getDay()}</span>`;
             days.addEventListener("click", async function() {
+            schedule.innerHTML = "";
             scheduleDate.innerText = "";
             let selectDay = document.createElement('h4');
             selectDay.innerText = `${year}년 ${currMonth}월 ${days.innerText}일`;
@@ -77,18 +81,29 @@ function calendar(year,currMonth,today) {
                 })
                 .then(response => response.json())
                 .then(data => {
+                    if(data == null){
+                        schedule.innerHTML = "<p>등록된 일정이 없습니다.</p>"
+                    }
                     data.forEach(element => {
                         
                         let name = element["NAME"];
+                        let tel = element["CONTACT"]
                         let address = element["ADDRESS"];
                         let appointDate = element["APPOINTMENT_DATE"];
                         let appointTime = element["APPOINTMENT_TIME"];
+
                         appointDate = appointDate.replace("GMT","GMT +0900") // 표준시를 한국표준시로 바꿈
                         appointDate = appointDate.replace("00:00:00",appointTime) // 00:00:00시를 불러온 시간 데이터로 바꿈
                         console.log(appointDate)
                         appointDate = new Date(appointDate);
                         console.log(appointDate)
                         let appoint = document.createElement("div");
+                        appoint.setAttribute("class","appointmentInfo")
+                        appoint.innerHTML = `<div class = 'center-info'><p>${name}</p><span class = 'center-info'>${address}</span>
+                        <span class = 'center-info'>${tel}</span></div>
+                        <div class = 'time'><p>${appointDate.getFullYear()}년 ${appointDate.getMonth()}월 ${appointDate.getDate()}일</p>
+                        <p>${appointDate.getHours()}시 ${appointDate.getMinutes()}분</p></div>`;
+                        schedule.appendChild(appoint)
                         
                         console.log(name)
 
@@ -114,7 +129,6 @@ let changeMonth = document.getElementsByClassName("changeMonth");
 for(let i = 0; i < changeMonth.length;i++){ // 월을 바꾸면 그에 맞는 달력으로 변환
     changeMonth[i].addEventListener("click",function () {
         if(i == 0){
-            WrapDay.innerText = ""
             if(currMonth == 1){
                 year--;
                 currMonth = 12;
@@ -124,7 +138,6 @@ for(let i = 0; i < changeMonth.length;i++){ // 월을 바꾸면 그에 맞는 �
             }
             calendar(year,currMonth,today);
         }else{
-            WrapDay.innerText = ""
             if(currMonth == 12){
                 year++;
                 currMonth = 1;

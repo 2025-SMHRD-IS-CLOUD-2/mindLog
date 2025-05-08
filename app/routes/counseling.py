@@ -19,15 +19,22 @@ def get_db_connection():
 @counseling_bp.route('/schedule')
 def schedule():
     conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    sql = f"""SELECT * 
-    FROM APPOINTMENTS 
-    WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST1')""" #{session.get('id')}
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    conn.close();
-    return render_template('counseling/schedule.html',result = result)
-
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            today = datetime.now()
+            sql = today.strftime("""SELECT *
+            FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
+            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            AND A.CENTER_SEQ = C.CENTER_SEQ
+            AND APPOINTMENT_DATE = '2025-05-07'""")
+            print(sql)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            print(result)
+            conn.close()
+        return render_template('counseling/schedule.html',result = result,today = today)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 @counseling_bp.route('/get_schedule',methods = ['POST'])
 def get_data():
     date = request.get_json()
@@ -44,13 +51,12 @@ def get_data():
             AND A.CENTER_SEQ = C.CENTER_SEQ
             AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
-            result = cursor.fetchall()  # [{'id': 1, 'name': 'Alice'}, ...]
+            result = cursor.fetchall()
             conn.close()
             for row in result:
                 for key, value in row.items():
                     if isinstance(value, timedelta):
                         row[key] = str(value)
-            print(result)
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
