@@ -47,7 +47,7 @@
 <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 <script>
   document.getElementById("signupBtn").onclick = function () {
-    location.href = "{{ url_for('auth.register') }}";
+    location.href = "{{ url_for('auth.join') }}";
   };
 </script>
 {% endblock %}

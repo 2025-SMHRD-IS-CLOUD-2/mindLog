@@ -40,7 +40,7 @@ def login():
             
             with conn.cursor(pymysql.cursors.DictCursor) as cur:
                 # 사용자 조회
-                sql = "SELECT * FROM users WHERE username = %s"
+                sql = "SELECT * FROM USERS WHERE USER_ID = %s"
                 cur.execute(sql, (username,))
                 user = cur.fetchone()
                 
@@ -68,65 +68,58 @@ def login():
             
     return render_template('auth/login.html', title='mindLog - 로그인')
 
-@auth_bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route('/join', methods=['GET'])
+def join():
+    return render_template('auth/join.html', title='회원가입')
+
+@auth_bp.route('/register', methods=['POST'])
 def register():
-    """회원가입 페이지"""
     if 'user_id' in session:
         return redirect(url_for('main.dashboard'))
-    
-    # POST 요청 처리 (회원가입 폼 제출)
-    if request.method == 'POST':
-        user_id = request.form.get('user_id')
-        password = request.form.get('password')
-        nickname = request.form.get('nickname')
-        birth_date = request.form.get('birth_date')
-        region = request.form.get('region')
-        security_question = request.form.get('security_question')
-        security_answer = request.form.get('security_answer')
-        
-        # 필수값 체크
-        if not all([user_id, password, nickname, birth_date, region, security_question, security_answer]):
-            flash('모든 항목을 입력해주세요.', 'danger')
-            return render_template('auth/join.html', title='회원가입')
-        
-        # 비밀번호 해싱
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        
-        # DB 저장
-        conn = None
-        try:
-            conn = pymysql.connect(
-                host=Config.DB_HOST,
-                port=Config.DB_PORT,
-                user=Config.DB_USER,
-                password=Config.DB_PASSWORD,
-                db=Config.DB_NAME,
-                charset='utf8mb4'
-            )
-            with conn.cursor() as cur:
-                # 아이디 중복 체크
-                sql = "SELECT * FROM USERS WHERE USER_ID = %s"
-                cur.execute(sql, (user_id,))
-                if cur.fetchone():
-                    flash('이미 사용 중인 아이디입니다.', 'danger')
-                    return render_template('auth/join.html', title='회원가입')
-                
-                # 회원정보 저장
-                sql = """
-                INSERT INTO USERS (USER_ID, PASSWORD_HASH, NICKNAME, BIRTH_DATE, REGION, SECURITY_QUESTION, SECURITY_ANSWER)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-                """
-                cur.execute(sql, (user_id, hashed_password, nickname, birth_date, region, security_question, security_answer))
-                conn.commit()
-                flash('회원가입이 완료되었습니다! 로그인해주세요.', 'success')
-                return redirect(url_for('auth.login'))
-        except Exception as e:
-            flash(f'회원가입 중 오류가 발생했습니다: {e}', 'danger')
-        finally:
-            if conn:
-                conn.close()
-    
-    return render_template('auth/join.html', title='회원가입')
+    user_id = request.form.get('user_id')
+    password = request.form.get('password')
+    nickname = request.form.get('nickname')
+    birth_date = request.form.get('birth_date')
+    region = request.form.get('region')
+    security_question = request.form.get('security_question')
+    security_answer = request.form.get('security_answer')
+
+    # 필수값 체크
+    if not all([user_id, password, nickname, birth_date, region, security_question, security_answer]):
+        flash('모든 항목을 입력해주세요.', 'danger')
+        return render_template('auth/join.html', title='회원가입')
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    conn = None
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor() as cur:
+            sql = "SELECT * FROM USERS WHERE USER_ID = %s"
+            cur.execute(sql, (user_id,))
+            if cur.fetchone():
+                flash('이미 사용 중인 아이디입니다.', 'danger')
+                return render_template('auth/join.html', title='회원가입')
+            sql = """
+            INSERT INTO USERS (USER_ID, PASSWORD_HASH, NICKNAME, BIRTH_DATE, REGION, SECURITY_QUESTION, SECURITY_ANSWER)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            cur.execute(sql, (user_id, hashed_password, nickname, birth_date, region, security_question, security_answer))
+            conn.commit()
+            flash('회원가입이 완료되었습니다! 로그인해주세요.', 'success')
+            return redirect(url_for('auth.login'))
+    except Exception as e:
+        flash(f'회원가입 중 오류가 발생했습니다: {e}', 'danger')
+        return render_template('auth/join.html', title='회원가입')
+    finally:
+        if conn:
+            conn.close()
 
 @auth_bp.route('/logout')
 def logout():
@@ -328,6 +321,30 @@ def find_password():
     
     return render_template('auth/find_password.html', title='mindLog - 비밀번호 찾기')
 
-@auth_bp.route("/join")
-def join():
-    return render_template("/auth/join.html")
+@auth_bp.route('/check-id', methods=['POST'])
+def check_id():
+    data = request.get_json()
+    user_id = data.get('user_id')
+    exists = False
+
+    conn = None
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor() as cur:
+            sql = "SELECT 1 FROM USERS WHERE USER_ID = %s"
+            cur.execute(sql, (user_id,))
+            if cur.fetchone():
+                exists = True
+    except Exception as e:
+        return jsonify({'exists': False, 'error': str(e)})
+    finally:
+        if conn:
+            conn.close()
+    return jsonify({'exists': exists})

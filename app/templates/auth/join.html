@@ -4,19 +4,21 @@
 <div class="join-container">
   <div class="join-card">
     <h1 class="join-title">회원가입</h1>
-    <form id="joinForm" action="{{ url_for('auth.join') }}" method="POST">
+    <form id="joinForm" action="{{ url_for('auth.register') }}" method="POST">
       <div class="form-group">
         <label for="user_id">아이디</label>
-        <input
-          type="text"
-          id="user_id"
-          name="user_id"
-          class="form-control"
-          required
-        />
-        <button type="button" class="id-check-btn" id="idCheckBtn">
-          중복확인
-        </button>
+        <div class="input-row">
+          <input
+            type="text"
+            id="user_id"
+            name="user_id"
+            class="form-control"
+            required
+          />
+          <button type="button" class="id-check-btn" id="idCheckBtn">
+            중복확인
+          </button>
+        </div>
         <div class="error-message" id="userIdError"></div>
       </div>
       <div class="form-group">
@@ -140,6 +142,7 @@
         if (data.exists) {
           errorElement.textContent = "이미 사용 중인 아이디입니다.";
           errorElement.style.display = "block";
+          errorElement.style.color = "#dc3545";
           isUserIdValid = false;
         } else {
           errorElement.textContent = "사용 가능한 아이디입니다.";

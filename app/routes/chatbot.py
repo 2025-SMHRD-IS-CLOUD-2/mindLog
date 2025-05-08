@@ -16,10 +16,8 @@ def index():
     if 'user_id' not in session:
         flash('챗봇 기능을 이용하려면 로그인이 필요합니다.', 'warning')
         return redirect(url_for('auth.login'))
-        
     # 이전 대화 내역 불러오기
     chat_history = get_chat_history(session['user_id'])
-    
     return render_template('chatbot/chat.html', 
                           title='mindLog - 마음챙김 챗봇',
                           chat_history=chat_history)
