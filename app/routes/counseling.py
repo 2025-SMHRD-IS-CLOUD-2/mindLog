@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, session, jsonify, flash, redirect, url_for
 import pymysql
-from datetime import datetime
+from datetime import datetime,timedelta
 from config import Config
 
 counseling_bp = Blueprint('counseling', __name__)
@@ -16,6 +16,35 @@ def get_db_connection():
         charset='utf8mb4'
     )
     return conn
+@counseling_bp.route('/schedule')
+def schedule():
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    session
+    sql = f"""SELECT * 
+    FROM APPOINTMENTS 
+    WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST1')""" #{session.get('id')}
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    conn.close();
+    return render_template('counseling/schedule.html',result = result)
+
+@counseling_bp.route('/get_schedule',methods = ['POST'])
+def get_data():
+    try:
+        conn = get_db_connection()
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = "SELECT * FROM APPOINTMENTS WHERE USER_SEQ = 1"
+            cursor.execute(sql)
+            result = cursor.fetchall()  # [{'id': 1, 'name': 'Alice'}, ...]
+            for row in result:
+                for key, value in row.items():
+                    if isinstance(value, timedelta):
+                        row[key] = str(value)
+            print(result)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @counseling_bp.route('/centers')
 def centers():

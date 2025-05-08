@@ -604,6 +604,7 @@
   
   /* ===== MOBILE OPTIMIZATIONS ===== */
   @media screen and (max-width: 480px) {
+    
     .notification-container {
       width: calc(100vw - 32px);
       right: 8px;

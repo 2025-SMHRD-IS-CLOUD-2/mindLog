@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
-
+<head>
+    <link rel="stylesheet" href="../../static/css/login.css">
+</head>
 {% block content %}
 <div class="container">
     <!-- 메인 컨텐츠 -->
@@ -10,8 +12,9 @@
                 <div class="input-group">
                     <input type="text" name="name" placeholder="닉네임을 입력해주세요" class="login-input" required>
                 </div>
-                <div class="input-group">
+                <div class="input-group" id = "inputId">
                     <input type="text" name="id" placeholder="아이디를 입력해주세요" class="login-input" required>
+                    <button >중복확인</button>
                 </div>
                 <div class="input-group">
                     <input type="password" name="password" placeholder="비밀번호를 입력해주세요" class="login-input" required>

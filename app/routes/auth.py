@@ -332,3 +332,7 @@ def find_password():
                 conn.close()
     
     return render_template('auth/find_password.html', title='mindLog - 비밀번호 찾기')
+
+@auth_bp.route("/join")
+def join():
+    return render_template("/auth/join.html")
