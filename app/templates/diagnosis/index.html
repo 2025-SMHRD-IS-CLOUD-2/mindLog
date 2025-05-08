@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>역학연구를 위한 우울척도 (CES-D)</title>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        body { width: 360px; margin: 0 auto; background: #f8f8f8; font-family: 'Pretendard', sans-serif; }
+        .container { padding: 12px 8px 28px 8px; }
+        .tabs { display: flex; gap: 8px; margin: 18px 0 16px 0; }
+        .tab-btn { flex: 1; padding: 10px 0; background: #e9ecef; border: none; border-radius: 8px 8px 0 0; font-weight: bold; font-size: 1.05em; color: #333; cursor: pointer; transition: background 0.2s; }
+        .tab-btn.active { background: #1fa463; color: #fff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .info-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .info-row label { flex: 1; font-size: 0.95em; }
+        .desc { background: #f2f2f2; border-radius: 8px; padding: 10px; font-size: 0.97em; margin-bottom: 14px; color: #444; }
+        .survey-q { background: #fff; border-radius: 14px; margin-bottom: 18px; padding: 16px 10px 14px 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); }
+        .survey-q .q-title { font-weight: bold; color: #1fa463; font-size: 1.08em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .survey-q .q-title .q-no { font-weight: bold; font-size: 1.1em; color: #1fa463; margin-right: 2px; }
+        .survey-q .choices { display: flex; justify-content: space-between; margin-top: 8px; gap: 4px; }
+        .survey-q .choice-label { display: flex; flex-direction: column; align-items: center; flex: 1; cursor: pointer; font-size: 0.97em; padding: 6px 0; border-radius: 8px; transition: background 0.15s; }
+        .survey-q input[type="radio"] { accent-color: #1fa463; width: 20px; height: 20px; margin-bottom: 4px; }
+        .survey-q .choice-label:hover { background: #f2f8f5; }
+        .survey-q .choice-label small { color: #888; font-size: 0.93em; }
+        .button-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+        .button-row button { flex: 1; padding: 8px 0; border: none; border-radius: 8px; background: #1fa463; color: #fff; font-weight: bold; }
+        .button-row button[type="reset"] { background: #888; }
+        .score-row { margin-top: 16px; font-weight: bold; color: #1fa463; font-size: 1.08em; }
+        @media (max-width: 400px) {
+            body { width: 100vw; }
+            .container { padding: 8px 2px 16px 2px; }
+            .survey-q { padding: 12px 4px 10px 8px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="info-row">
+        <label>연령 <input type="text" name="age" placeholder="숫자만 입력해 주세요"></label>
+        <label>성별
+            <select name="gender">
+                <option value="">선택</option>
+                <option value="male">남</option>
+                <option value="female">여</option>
+            </select>
+        </label>
+        <label>실시일 <input type="date" name="date"></label>
+    </div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="cesd">CES-D</button>
+        <button class="tab-btn" data-tab="survey2">CESD-10-D</button>
+        <button class="tab-btn" data-tab="survey3">PHQ-9</button>
+    </div>
+    <!-- CES-D 설문 (20문항) -->
+    <div class="tab-content active" id="cesd">
+        <h1>역학연구를 위한 우울척도 (CES-D)</h1>
+        <form id="cesd-form">
+            <div class="desc">아래에 문항을 잘 읽으시고, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 문항에 V표를 하십시오.<br>한 문항도 빠짐없이 답해 주시기 바랍니다.</div>
+            <!-- 1~20번 문항 반복 -->
+            <div class="survey-q"><div class="q-title"><span class="q-no">1.</span> 평소에는 상기지지 않았던 일이 상기시게 느껴졌다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q1" value="0" required>거의 드물게<br><small>(1일 이하)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="1">때때로<br><small>(1~2일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="2">상당히<br><small>(3~4일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="3">대부분<br><small>(5~7일)</small></label>
+                </div>
+            </div>
+            <div class="survey-q"><div class="q-title"><span class="q-no">2.</span> 별로 먹고 싶지 않았다, 입맛이 없었다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q2" value="0" required>거의 드물게<br><small>(1일 이하)</small></label>
+                    <label class="choice-label"><input type="radio" name="q2" value="1">때때로<br><small>(1~2일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q2" value="2">상당히<br><small>(3~4일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q2" value="3">대부분<br><small>(5~7일)</small></label>
+                </div>
+            </div>
+            <!-- ... 3~20번 문항 동일하게 반복 ... -->
+            <!-- 실제로는 3~20번까지 동일 구조로 추가 -->
+            <!-- 아래는 예시로 3~5번만 추가 -->
+            <div class="survey-q"><div class="q-title"><span class="q-no">3.</span> 가족이나 친구가 도와주더라도 울적한 기분을 떨쳐버릴 수 없었다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q3" value="0" required>거의 드물게<br><small>(1일 이하)</small></label>
+                    <label class="choice-label"><input type="radio" name="q3" value="1">때때로<br><small>(1~2일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q3" value="2">상당히<br><small>(3~4일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q3" value="3">대부분<br><small>(5~7일)</small></label>
+                </div>
+            </div>
+            <div class="survey-q"><div class="q-title"><span class="q-no">4.</span> 나도 다른 사람만큼 기분이 좋았다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q4" value="0" required>거의 드물게<br><small>(1일 이하)</small></label>
+                    <label class="choice-label"><input type="radio" name="q4" value="1">때때로<br><small>(1~2일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q4" value="2">상당히<br><small>(3~4일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q4" value="3">대부분<br><small>(5~7일)</small></label>
+                </div>
+            </div>
+            <div class="survey-q"><div class="q-title"><span class="q-no">5.</span> 하고 있는 일에 마음을 집중하기가 힘들었다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q5" value="0" required>거의 드물게<br><small>(1일 이하)</small></label>
+                    <label class="choice-label"><input type="radio" name="q5" value="1">때때로<br><small>(1~2일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q5" value="2">상당히<br><small>(3~4일)</small></label>
+                    <label class="choice-label"><input type="radio" name="q5" value="3">대부분<br><small>(5~7일)</small></label>
+                </div>
+            </div>
+            <!-- ... 6~20번 문항도 동일하게 추가 ... -->
+            <div class="button-row">
+                <button type="submit">제출</button>
+                <button type="reset">초기화</button>
+            </div>
+            <div class="score-row" id="score-result-cesd"></div>
+        </form>
+    </div>
+    <!-- CESD-10-D 설문 (10문항) -->
+    <div class="tab-content" id="survey2">
+        <h1>역학연구를 위한 우울척도-단축형 (CESD-10-D)</h1>
+        <form id="cesd10d-form">
+            <p class="desc">아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br>한 문항도 빠짐없이 답해 주시기 바랍니다.</p>
+            <!-- 1~10번 문항 반복 -->
+            <div class="survey-q"><div class="q-title"><span class="q-no">1.</span> 비교적 잘 지냈다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q1" value="0" required>아니다<br><small>(1점)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="1">그렇다<br><small>(0점)</small></label>
+                </div>
+            </div>
+            <div class="survey-q"><div class="q-title"><span class="q-no">2.</span> 상당히 우울했다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q2" value="0" required>아니다<br><small>(1점)</small></label>
+                    <label class="choice-label"><input type="radio" name="q2" value="1">그렇다<br><small>(0점)</small></label>
+                </div>
+            </div>
+            <!-- ... 3~10번 문항 동일하게 반복 ... -->
+            <div class="button-row">
+                <button type="submit">제출</button>
+                <button type="reset">초기화</button>
+            </div>
+            <div class="score-row" id="score-result-cesd10d"></div>
+        </form>
+    </div>
+    <!-- PHQ-9 설문 (9문항) -->
+    <div class="tab-content" id="survey3">
+        <h1>역학연구를 위한 우울척도-단축형 (PHQ-9)</h1>
+        <form id="phq-9-form">
+            <p class="desc">아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br>한 문항도 빠짐없이 답해 주시기 바랍니다.</p>
+            <!-- 1~9번 문항 반복 -->
+            <div class="survey-q"><div class="q-title"><span class="q-no">1.</span> 기분이 가라앉거나, 우울하거나, 희망이 없다고 느꼈다.</div>
+                <div class="choices">
+                    <label class="choice-label"><input type="radio" name="q1" value="0" required>없음<br><small>(0점)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="1">2~6일<br><small>(1점)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="2">7~12일<br><small>(2점)</small></label>
+                    <label class="choice-label"><input type="radio" name="q1" value="3">거의매일<br><small>(3점)</small></label>
+                </div>
+            </div>
+            <!-- ... 2~9번 문항 동일하게 반복 ... -->
+            <div class="button-row">
+                <button type="submit">제출</button>
+                <button type="reset">초기화</button>
+            </div>
+            <div class="score-row" id="score-result-phq9"></div>
+        </form>
+    </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 설문별 설정
+    const surveys = [
+        {
+            formId: "cesd-form",
+            resultId: "score-result-cesd",
+            questionCount: 20,
+            reverse: [4, 8, 12, 16],
+            scoreMap: [0, 1, 2, 3],
+            interpret: (score) => {
+                if (score < 21) return "정상 범위";
+                if (score < 25) return "가벼운~중간 우울, 주위에 도움 요청 권고";
+                return "심한 우울, 전문가 상담 권고";
+            }
+        },
+        {
+            formId: "cesd10d-form",
+            resultId: "score-result-cesd10d",
+            questionCount: 10,
+            reverse: [1, 6, 8],
+            scoreMap: [1, 0], // 0=1점, 1=0점
+            interpret: (score) => score >= 10 ? "우울 위험군" : "정상 범위"
+        },
+        {
+            formId: "phq-9-form",
+            resultId: "score-result-phq9",
+            questionCount: 9,
+            reverse: [],
+            scoreMap: [0, 1, 2, 3],
+            interpret: (score) => {
+                if (score < 5) return "정상 또는 최소 우울";
+                if (score < 10) return "경미한 우울";
+                if (score < 15) return "중등도 우울";
+                if (score < 20) return "중증 우울";
+                return "극심한 우울";
+            }
+        }
+    ];
+
+    function handleSurvey({formId, resultId, questionCount, reverse, scoreMap, interpret}) {
+        const form = document.getElementById(formId);
+        const result = document.getElementById(resultId);
+        if (!form || !result) return;
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            let total = 0;
+            for (let i = 1; i <= questionCount; i++) {
+                const checked = form.querySelector('input[name="q' + i + '"]:checked');
+                let val = checked ? Number(checked.value) : null;
+                if (val === null) {
+                    alert(i + "번 문항에 답변하지 않았습니다.");
+                    return;
+                }
+                if (reverse.includes(i)) {
+                    val = scoreMap.length - 1 - val;
+                }
+                total += val;
+            }
+            let message = `총점: ${total}점 (${interpret(total)})`;
+            result.textContent = message;
+            alert(message);
+        });
+
+        form.addEventListener("reset", function () {
+            setTimeout(() => { result.textContent = ""; }, 10);
+        });
+    }
+
+    surveys.forEach(handleSurvey);
+
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('reset', function () {
+            setTimeout(() => {
+                document.querySelector('input[name="age"]').value = '';
+                document.querySelector('select[name="gender"]').selectedIndex = 0;
+                document.querySelector('input[name="date"]').value = '';
+            }, 10);
+        });
+    });
+
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.tab).classList.add('active');
+        });
+    });
+});
+</script>
+</body>
+</html>
