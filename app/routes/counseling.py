@@ -20,7 +20,6 @@ def get_db_connection():
 def schedule():
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    session
     sql = f"""SELECT * 
     FROM APPOINTMENTS 
     WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST1')""" #{session.get('id')}
@@ -31,12 +30,22 @@ def schedule():
 
 @counseling_bp.route('/get_schedule',methods = ['POST'])
 def get_data():
+    date = request.get_json()
+    year = date.get("year")
+    month = date.get("month")
+    day = date.get("day")
+    sc = datetime(int(year),int(month),int(day))
     try:
         conn = get_db_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = "SELECT * FROM APPOINTMENTS WHERE USER_SEQ = 1"
+            sql = sc.strftime("""SELECT *
+            FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
+            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            AND A.CENTER_SEQ = C.CENTER_SEQ
+            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
             result = cursor.fetchall()  # [{'id': 1, 'name': 'Alice'}, ...]
+            conn.close()
             for row in result:
                 for key, value in row.items():
                     if isinstance(value, timedelta):

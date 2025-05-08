@@ -20,11 +20,16 @@ function calendar(year,currMonth,today) {
             days.addEventListener("click", function() {
             scheduleDate.innerText = "";
             let selectDay = document.createElement('h4');
+            let tempYear;
+            let tempMonth;
             if(currMonth == 1){
-                selectDay.innerText = `${year-1}년 12월 ${days.innerText}일`;
+                tempYear = year -1
+                selectDay.innerText = `${tempYear}년 12월 ${days.innerText}일`;
             }else{
-                selectDay.innerText = `${year}년 ${currMonth-1}월 ${days.innerText}일`;
+                tempMonth = currMonth -1
+                selectDay.innerText = `${year}년 ${tempMonth}월 ${days.innerText}일`;
             }
+            
             scheduleDate.append(selectDay);
             });
             WrapDay.append(days);
@@ -39,19 +44,14 @@ function calendar(year,currMonth,today) {
             scheduleDate.append(selectDay);
             await fetch('http://127.0.0.1:5000/counseling/get_schedule',{
             method: 'POST',
-            body: JSON.stringify({ url: window.location.href }),
+            body: JSON.stringify({"year":year,"month":currMonth,"day":days.innerText}),
             headers: {
             'Content-Type': 'application/json'
             }
             })
             .then(response => response.json())
             .then(data => {
-                console.log('받은 데이터:', data);
-                data.forEach(user => {
-                const div = document.createElement('div');
-                div.textContent = `${user.id}: ${user.name}`;
-                document.body.appendChild(div);
-                });
+                console.log(data)
             })
             .catch(error => {
                 console.error('에러 발생:', error);
@@ -63,12 +63,35 @@ function calendar(year,currMonth,today) {
         let days =  document.createElement("div");
             days.setAttribute("class","days");
             days.innerHTML = `<span>${i - tMFD.getDay()}</span>`;
-            days.addEventListener("click", function() {
+            days.addEventListener("click", async function() {
             scheduleDate.innerText = "";
             let selectDay = document.createElement('h4');
             selectDay.innerText = `${year}년 ${currMonth}월 ${days.innerText}일`;
             scheduleDate.append(selectDay);
-            });
+            await fetch('http://127.0.0.1:5000/counseling/get_schedule',{
+                method: 'POST',
+                body: JSON.stringify({"year":year,"month":currMonth,"day":days.innerText}),
+                headers: {
+                'Content-Type': 'application/json'
+                }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(element => {
+                        
+                        let name = element["NAME"]
+                        let address = element["ADDRESS"]
+                        let appointDate = element["APPOINTMENT_DATE"]
+                        let appointTime = element["APPOINTMENT_TIME"]
+                        console.log(name)
+
+                    });
+                    console.log(data)
+                })
+                .catch(error => {
+                    console.error('에러 발생:', error);
+                });
+                });
             WrapDay.append(days);
         }
     }
