@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>마음챙김 챗봇</title>
+    <link rel="stylesheet" href="/static/css/chatbot.css" />
+  </head>
+  <body>
+    <div class="chat-header">
+      <div class="logo"></div>
+      <div class="icons">
+        <img src="/static/img/bell.svg" class="icon" alt="알림" />
+        <img src="/static/img/menu.svg" class="icon" alt="메뉴" />
+      </div>
+    </div>
+    <div id="chat-area"></div>
+    <form class="chat-input-bar" onsubmit="sendMessage(); return false;">
+      <input
+        type="text"
+        id="user-input"
+        placeholder="메시지를 입력하세요"
+        autocomplete="off"
+      />
+      <button type="submit">
+        <svg class="send-icon" viewBox="0 0 24 24">
+          <path d="M2 21l21-9-21-9v7l15 2-15 2z" fill="#1976d2" />
+        </svg>
+      </button>
+    </form>
+    <script>
+      function appendMessage(message, isUser) {
+        const row = document.createElement("div");
+        row.className = "msg-row " + (isUser ? "user" : "bot");
+        const bubble = document.createElement("div");
+        bubble.className = "msg-bubble";
+        bubble.textContent = message;
+        row.appendChild(bubble);
+        document.getElementById("chat-area").appendChild(row);
+        document.getElementById("chat-area").scrollTop =
+          document.getElementById("chat-area").scrollHeight;
+      }
+      async function sendMessage() {
+        const input = document.getElementById("user-input");
+        const message = input.value.trim();
+        if (!message) return;
+        appendMessage(message, true);
+        input.value = "";
+        const res = await fetch("/chatbot/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: `message=${encodeURIComponent(message)}`,
+        });
+        const data = await res.json();
+        if (data.botResponse) {
+          appendMessage(data.botResponse, false);
+        } else if (data.error) {
+          alert(data.error);
+        }
+      }
+      // 엔터키로 전송
+      document
+        .getElementById("user-input")
+        .addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+          }
+        });
+    </script>
+  </body>
+</html>

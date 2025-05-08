@@ -1,0 +1,77 @@
+/* 메인 컨테이너 */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 메인 카드 */
+.main-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-bottom: 20px;
+}
+
+/* 메인 제목 */
+.main-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* 메인 설명 */
+.main-description {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* 메인 버튼 */
+.main-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s;
+}
+
+.main-btn:hover {
+  background-color: #0056b3;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .main-container {
+    padding: 15px;
+  }
+
+  .main-card {
+    padding: 20px;
+  }
+
+  .main-title {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+
+  .main-description {
+    font-size: 1rem;
+    margin-bottom: 20px;
+  }
+
+  .main-btn {
+    padding: 10px 20px;
+  }
+}

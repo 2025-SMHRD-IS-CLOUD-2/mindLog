@@ -3,9 +3,12 @@ import pymysql
 from datetime import datetime
 from config import Config
 import re
+from app.ai.chatbot import ChatbotService
 
 # 챗봇 블루프린트 정의
 chatbot_bp = Blueprint('chatbot', __name__)
+
+chatbot_service = ChatbotService()
 
 @chatbot_bp.route('/')
 def index():
@@ -36,14 +39,8 @@ def send_message():
     # 사용자 메시지 저장
     save_message(session['user_id'], user_message, True)
     
-    # 위험 키워드 체크
-    risk_level = check_risk_keywords(user_message)
-    
-    # 챗봇 응답 생성
-    if risk_level == 'high':
-        bot_response = generate_crisis_response()
-    else:
-        bot_response = generate_bot_response(user_message, risk_level)
+    # ChatbotService로 응답 생성
+    bot_response = chatbot_service.handle_input(user_message, user_id=session['user_id'])
     
     # 챗봇 응답 저장
     save_message(session['user_id'], bot_response, False)

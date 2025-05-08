@@ -1,0 +1,26 @@
+<header class="header">
+  <div class="header-content">
+    <div class="logo">
+      <a href="{{ url_for('main.index') }}">
+        <img
+          src="{{ url_for('static', filename='assets/mindbridge_secure_logo.png') }}"
+          alt="mindLog"
+        />
+      </a>
+    </div>
+    <div class="header-icons">
+      <button class="notification-toggle">
+        <img
+          src="{{ url_for('static', filename='assets/icons/notification.svg') }}"
+          alt="알림"
+          class="notification-icon"
+        />
+      </button>
+      <button class="menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>

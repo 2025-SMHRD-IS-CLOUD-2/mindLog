@@ -14,7 +14,7 @@ venv/
 # Flask
 instance/
 flask_session/
-
+flask_session/
 # Database
 *.db
 *.sqlite3

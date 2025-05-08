@@ -76,23 +76,23 @@ def register():
     
     # POST 요청 처리 (회원가입 폼 제출)
     if request.method == 'POST':
-        username = request.form.get('id')
+        user_id = request.form.get('user_id')
         password = request.form.get('password')
-        birthday = request.form.get('birthday')
-        gender = request.form.get('gender')
-        nickname = request.form.get('name', username)
+        nickname = request.form.get('nickname')
+        birth_date = request.form.get('birth_date')
+        region = request.form.get('region')
+        security_question = request.form.get('security_question')
+        security_answer = request.form.get('security_answer')
         
-        # 유효성 검사
-        if not username or not password or not birthday or not gender:
-            flash('모든 필수 항목을 입력해주세요.', 'danger')
-            return render_template('auth/join.html', title='mindLog - 회원가입')
-            
-        # 비밀번호 유효성 검사 (8자 이상, 영문/숫자/특수문자 포함)
-        if len(password) < 8 or not re.search(r'[A-Za-z]', password) or not re.search(r'\d', password) or not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            flash('비밀번호는 8자 이상이며, 영문/숫자/특수문자를 포함해야 합니다.', 'danger')
-            return render_template('auth/join.html', title='mindLog - 회원가입')
+        # 필수값 체크
+        if not all([user_id, password, nickname, birth_date, region, security_question, security_answer]):
+            flash('모든 항목을 입력해주세요.', 'danger')
+            return render_template('auth/join.html', title='회원가입')
         
-        # DB 연결
+        # 비밀번호 해싱
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        
+        # DB 저장
         conn = None
         try:
             conn = pymysql.connect(
@@ -103,26 +103,21 @@ def register():
                 db=Config.DB_NAME,
                 charset='utf8mb4'
             )
-            
             with conn.cursor() as cur:
-                # 아이디 중복 확인
-                sql = "SELECT * FROM users WHERE username = %s"
-                cur.execute(sql, (username,))
+                # 아이디 중복 체크
+                sql = "SELECT * FROM USERS WHERE USER_ID = %s"
+                cur.execute(sql, (user_id,))
                 if cur.fetchone():
                     flash('이미 사용 중인 아이디입니다.', 'danger')
-                    return render_template('auth/join.html', title='mindLog - 회원가입')
+                    return render_template('auth/join.html', title='회원가입')
                 
-                # 비밀번호 해싱
-                hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-                
-                # 사용자 정보 저장
+                # 회원정보 저장
                 sql = """
-                INSERT INTO users (username, password_hash, nickname, birthday, gender, created_at) 
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO USERS (USER_ID, PASSWORD_HASH, NICKNAME, BIRTH_DATE, REGION, SECURITY_QUESTION, SECURITY_ANSWER)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-                cur.execute(sql, (username, hashed_password, nickname, birthday, gender, datetime.now()))
+                cur.execute(sql, (user_id, hashed_password, nickname, birth_date, region, security_question, security_answer))
                 conn.commit()
-                
                 flash('회원가입이 완료되었습니다! 로그인해주세요.', 'success')
                 return redirect(url_for('auth.login'))
         except Exception as e:
@@ -131,7 +126,7 @@ def register():
             if conn:
                 conn.close()
     
-    return render_template('auth/join.html', title='mindLog - 회원가입')
+    return render_template('auth/join.html', title='회원가입')
 
 @auth_bp.route('/logout')
 def logout():

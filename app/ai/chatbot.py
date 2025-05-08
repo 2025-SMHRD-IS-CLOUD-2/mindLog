@@ -3,6 +3,10 @@ from typing import Dict, List, Optional
 import openai
 from dotenv import load_dotenv
 from pathlib import Path
+import pymysql
+import json
+from config import Config
+from app.ai.depression_model import DepressionModel
 
 # AI 폴더의 .env 파일 로드
 env_path = Path(__file__).parent / '.env'
@@ -17,13 +21,231 @@ class ChatbotService:
         
         self.client = openai.OpenAI(api_key=self.api_key)
         
+        # 시스템 프롬프트 설정
+        self.system_prompt = os.getenv('SYSTEM_PROMPT', """
+        당신은 12-19세 청소년을 위한 정신 건강 상담 챗봇 '마인드브릿지'입니다.
+        
+        대화 원칙:
+        1. 청소년 친화적 언어를 사용하세요. 전문용어는 최소화하고 이해하기 쉬운 표현을 사용하세요.
+        2. 반영적 경청, 공감적 응답, 개방형 질문 기법을 활용하세요.
+        3. 부정적인 감정도 인정하고 공감하되, 긍정적인 관점도 제시해 주세요.
+        4. 상담 구조는 관계 형성 → 문제 탐색 → 대안 제시 → 정리 순으로 진행합니다.
+        
+        안전 지침:
+        1. 자살, 자해, 폭력 등 위험 발언을 감지하면 적절한 위기 자원을 안내하세요.
+        2. 항상 사용자의 안전을 최우선으로 고려하세요.
+        3. 전문적인 의학적, 심리적 조언은 실제 전문가와 상담할 것을 권장하세요.
+        """)
+        
         # 대화 기록 저장
         self.conversation_history: List[Dict] = []
+        # 초기 대화 기록에 시스템 프롬프트 추가
+        self.conversation_history.append({"role": "system", "content": self.system_prompt})
         
         # 위기 개입 임계값
         self.crisis_threshold = float(os.getenv('CRISIS_THRESHOLD', 0.7))
         self.warning_threshold = float(os.getenv('WARNING_THRESHOLD', 0.5))
         
+        self.survey_in_progress = False
+        self.survey_type = None
+        self.survey_questions = []
+        self.survey_answers = []
+        self.current_question_idx = 0
+        self.survey_ended = False
+        self.ending_message_count = 0
+        self.ending_messages = [
+            "모든 질문에 답해주셔서 고마워요! 당신의 마음을 이해하는 데 큰 도움이 되었어요.",
+            "혹시 더 이야기하고 싶은 게 있으면 언제든 말씀해 주세요. 당신은 혼자가 아니에요.",
+            "필요하다면 전문가와 상담을 권장드려요. 언제든 다시 찾아와도 괜찮아요!"
+        ]
+        self.state = 'init'  # 'init', 'consult', 'survey'
+        self.depression_model = DepressionModel()
+        self.survey_sequence = ['PHQ-9', 'CES-D', 'CESD-10-D']
+        self.survey_index = 0
+        self.ask_additional_survey = False
+
+    def get_assessment_questions(self, assessment_type):
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT QUESTION_NUMBER, QUESTION_TEXT, RESPONSE_OPTIONS
+                    FROM ASSESSMENT_QUESTIONS
+                    WHERE ASSESSMENT_TYPE = %s
+                    ORDER BY QUESTION_NUMBER ASC
+                """
+                cursor.execute(sql, (assessment_type,))
+                result = cursor.fetchall()
+                questions = [
+                    {
+                        'number': row['QUESTION_NUMBER'],
+                        'text': row['QUESTION_TEXT'],
+                        'options': json.loads(row['RESPONSE_OPTIONS'])
+                    }
+                    for row in result
+                ]
+                return questions
+        finally:
+            conn.close()
+
+    def start_survey(self, survey_type=None, user_id=None):
+        if survey_type is None:
+            survey_type = self.survey_sequence[self.survey_index]
+        self.survey_type = survey_type
+        self.survey_questions = self.get_assessment_questions(survey_type)
+        self.survey_answers = []
+        self.current_question_idx = 0
+        self.survey_in_progress = True
+        self.survey_ended = False
+        self.ending_message_count = 0
+        if user_id is not None:
+            self.current_user_id = user_id
+        if self.survey_questions:
+            return f"자가진단({survey_type})을 시작할게요!\n{self.survey_questions[0]['text']}\n{self._format_options(self.survey_questions[0]['options'])}"
+        else:
+            self.survey_in_progress = False
+            return "설문 문항을 불러오지 못했습니다. 관리자에게 문의해 주세요."
+
+    def answer_survey(self, answer):
+        if not self.survey_in_progress or self.survey_ended:
+            return "설문이 이미 종료되었거나 진행 중이 아닙니다."
+        # 답변을 score로 저장
+        options = self.survey_questions[self.current_question_idx]['options']
+        score_to_save = None
+        for opt in options:
+            if answer == opt['text']:
+                score_to_save = opt['score']
+                break
+        if score_to_save is not None:
+            self.survey_answers.append(score_to_save)
+        else:
+            self.survey_answers.append(answer)  # fallback
+        self.current_question_idx += 1
+        if self.current_question_idx < len(self.survey_questions):
+            # 다음 질문 반환
+            q = self.survey_questions[self.current_question_idx]
+            return f"{q['text']}\n{self._format_options(q['options'])}"
+        else:
+            # 설문 종료, 점수 계산 및 결과 안내
+            self.survey_in_progress = False
+            self.survey_ended = True
+            return self.calculate_survey_result()
+
+    def save_assessment_history(self, user_id, assessment_type, score, risk_level, details):
+        """설문 결과를 DB에 저장"""
+        conn = Config.get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                sql = """
+                    INSERT INTO ASSESSMENT_HISTORY 
+                    (USER_SEQ, ASSESSMENT_TYPE, SCORE, RISK_LEVEL, DETAILS, ASSESSMENT_DATE)
+                    VALUES (%s, %s, %s, %s, %s, NOW())
+                """
+                cursor.execute(sql, (user_id, assessment_type, score, risk_level, details))
+            conn.commit()
+        except Exception as e:
+            print(f"ASSESSMENT_HISTORY 저장 오류: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
+
+    def calculate_survey_result(self):
+        """설문 결과 계산"""
+        # 점수 계산
+        total_score = sum(int(score) for score in self.survey_answers)
+        
+        # 위험도 판단
+        risk_level = 'normal'
+        if self.survey_type == 'PHQ-9':
+            if total_score >= 20:
+                risk_level = 'severe'
+            elif total_score >= 15:
+                risk_level = 'moderate'
+            elif total_score >= 10:
+                risk_level = 'mild'
+        elif self.survey_type == 'CES-D':
+            if total_score >= 24:
+                risk_level = 'severe'
+            elif total_score >= 16:
+                risk_level = 'moderate'
+            elif total_score >= 8:
+                risk_level = 'mild'
+        elif self.survey_type == 'CESD-10-D':
+            if total_score >= 10:
+                risk_level = 'severe'
+            elif total_score >= 7:
+                risk_level = 'moderate'
+            elif total_score >= 4:
+                risk_level = 'mild'
+        
+        # DB에 저장
+        self.save_assessment_history(
+            user_id=self.current_user_id,
+            assessment_type=self.survey_type,
+            score=total_score,
+            risk_level=risk_level,
+            details=json.dumps(self.survey_answers)
+        )
+        
+        # 결과 메시지 생성
+        result_message = f"모든 질문에 답해주셔서 고마워요!\n"
+        result_message += f"당신의 {self.survey_type} 점수는 {total_score}점입니다.\n"
+        
+        # GPT로 결과 해석 요청
+        prompt = f"""
+        다음은 {self.survey_type} 자가진단 결과입니다:
+        - 총점: {total_score}점
+        - 위험도: {risk_level}
+        
+        이 결과를 바탕으로 공감적이고 위로가 되는 메시지를 작성해주세요.
+        전문가 상담을 권장하는 내용도 포함해주세요.
+        """
+        
+        response = self.get_gpt_feedback(self.survey_answers, total_score)
+        result_message += response + "\n"
+        result_message += "추가로 다른 자가문진표(CES-D, CESD-10-D 등)를 진행하시겠어요? (네/아니오)"
+        self.ask_additional_survey = True
+        return result_message
+
+    def get_gpt_feedback(self, answers, score):
+        # OpenAI API 호출 예시
+        prompt = f"""아래는 사용자의 우울증 자가진단 답변과 점수입니다.\n\n답변: {answers}\n점수: {score}\n이 사용자를 위로하고, 필요한 경우 전문가 상담을 권유하는 따뜻한 멘트를 생성해줘."""
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"GPT 피드백 생성 오류: {str(e)}")
+            return "(GPT 피드백 생성에 실패했습니다. 기본 안내를 참고해 주세요.)"
+
+    def next_ending_message(self):
+        if not self.survey_ended:
+            return ""
+        self.ending_message_count += 1
+        if self.ending_message_count < len(self.ending_messages):
+            return self.ending_messages[self.ending_message_count]
+        else:
+            return "자가진단이 종료되었습니다. 종료 버튼을 눌러주세요."
+
+    def _format_options(self, options):
+        # 옵션을 보기 좋게 문자열로 변환
+        return '\n'.join([f"- {opt['text']}" for opt in options])
+
     def chat(self, 
             message: str, 
             depression_probability: Optional[float] = None) -> str:
@@ -86,4 +308,129 @@ class ChatbotService:
             self.crisis_threshold = crisis
             self.warning_threshold = warning
         else:
-            raise ValueError("임계값은 0과 1 사이여야 하며, warning은 crisis보다 작아야 합니다.") 
+            raise ValueError("임계값은 0과 1 사이여야 하며, warning은 crisis보다 작아야 합니다.")
+
+    def start(self):
+        self.state = 'init'
+        return (
+            "안녕하세요! 무엇을 도와드릴까요?\n"
+            "1. 상담(자유 대화)\n2. 자가문진표 작성\n"
+            "(원하는 번호나 키워드를 입력해 주세요)"
+        )
+
+    def save_diagnosis_result(self, user_id, total_score, risk_level, user_text):
+        import pymysql
+        from datetime import datetime
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        try:
+            with conn.cursor() as cur:
+                sql = """
+                INSERT INTO SELFDIAGNOSIS (USER_SEQ, DIAGNOSIS_DATE, TOTAL_SCORE, RISK_LEVEL, USER_TEXT)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+                cur.execute(sql, (user_id, datetime.now(), total_score, risk_level, user_text))
+                conn.commit()
+        except Exception as e:
+            print(f"SELFDIAGNOSIS 저장 오류: {e}")
+        finally:
+            conn.close()
+
+    def handle_input(self, user_input, user_id=None):
+        if getattr(self, 'ask_additional_survey', False):
+            self.ask_additional_survey = False
+            if '네' in user_input or user_input.strip().lower() in ['y', 'yes']:
+                self.survey_index += 1
+                if self.survey_index < len(self.survey_sequence):
+                    self.survey_ended = False
+                    self.ending_message_count = 0
+                    return self.start_survey(self.survey_sequence[self.survey_index], user_id=user_id)
+                else:
+                    self.survey_ended = True
+                    return self.ending_messages[0]
+            else:
+                self.survey_ended = True
+                return self.ending_messages[0]
+        if self.state == 'init':
+            if '상담' in user_input or user_input.strip() == '1':
+                self.state = 'consult'
+                return "상담을 시작할게요! 고민이나 궁금한 점을 자유롭게 말씀해 주세요."
+            elif '문진' in user_input or '자가' in user_input or user_input.strip() == '2':
+                self.state = 'survey'
+                return self.start_survey('PHQ-9', user_id=user_id)
+            else:
+                return "1(상담) 또는 2(자가문진표) 중에서 선택해 주세요."
+        elif self.state == 'consult':
+            # 사용자가 자가문진표를 원하면 즉시 설문 모드로 전환
+            if any(keyword in user_input for keyword in ['문진', '자가진단', '자가문진표']):
+                self.state = 'survey'
+                return self.start_survey('PHQ-9', user_id=user_id)
+            # 상담 대화: GPT 답변 + DB 저장 + KoBERT 점수 판별 + 진단 결과 저장
+            if user_id is not None:
+                self.save_message_to_db(user_id, user_input, is_from_user=True)
+            depression_result = self.depression_model.predict(user_input)
+            prob = depression_result['depression_probability']
+            risk_level = depression_result['label_name']
+            # 진단 결과 DB 저장
+            if user_id is not None:
+                self.save_diagnosis_result(user_id, int(prob * 100), risk_level, user_input)
+            if prob >= self.crisis_threshold:
+                crisis_msg = "지금 많이 힘들어 보이네요. 위기 상황일 경우, 1393 등 전문기관에 꼭 연락해 주세요."
+                if user_id is not None:
+                    self.save_message_to_db(user_id, crisis_msg, is_from_user=False)
+                return crisis_msg
+            gpt_response = self.get_gpt_response(user_input)
+            if user_id is not None:
+                self.save_message_to_db(user_id, gpt_response, is_from_user=False)
+            return gpt_response
+        elif self.state == 'survey':
+            return self.answer_survey(user_input)
+
+    def get_gpt_response(self, user_input):
+        try:
+            response = self.client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": self.system_prompt},
+                    {"role": "user", "content": user_input}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"GPT 상담 생성 오류: {str(e)}")
+            return "(GPT 상담 응답 생성에 실패했습니다. 기본 안내를 참고해 주세요.)"
+
+    def save_message_to_db(self, user_id, message, is_from_user):
+        # DB에 메시지 저장 (user_id 필요)
+        import pymysql
+        from datetime import datetime
+        conn = None
+        try:
+            conn = pymysql.connect(
+                host=Config.DB_HOST,
+                port=Config.DB_PORT,
+                user=Config.DB_USER,
+                password=Config.DB_PASSWORD,
+                db=Config.DB_NAME,
+                charset='utf8mb4'
+            )
+            with conn.cursor() as cur:
+                sql = """
+                INSERT INTO CHATMESSAGES (USER_SEQ, MESSAGE_TEXT, IS_FROM_USER, TIMESTAMP)
+                VALUES (%s, %s, %s, %s)
+                """
+                cur.execute(sql, (user_id, message, is_from_user, datetime.now()))
+                conn.commit()
+        except Exception as e:
+            print(f"메시지 저장 오류: {e}")
+        finally:
+            if conn:
+                conn.close() 

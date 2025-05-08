@@ -1,45 +1,225 @@
-{% extends 'base.html' %}
-<head>
-    <link rel="stylesheet" href="../../static/css/login.css">
-</head>
-{% block content %}
-<div class="container">
-    <!-- 메인 컨텐츠 -->
-    <main class="main-content">
-        <div class="join-form">
-            <h1>회원가입</h1>
-            <form id="joinForm" method="post" action="{{ url_for('auth.register') }}">
-                <div class="input-group">
-                    <input type="text" name="name" placeholder="닉네임을 입력해주세요" class="login-input" required>
-                </div>
-                <div class="input-group" id = "inputId">
-                    <input type="text" name="id" placeholder="아이디를 입력해주세요" class="login-input" required>
-                    <button >중복확인</button>
-                </div>
-                <div class="input-group">
-                    <input type="password" name="password" placeholder="비밀번호를 입력해주세요" class="login-input" required>
-                </div>
-                <div class="input-group">
-                    <input type="date" name="birthday" class="login-input" required>
-                </div>
-                <div class="input-group flex-group">
-                    <label class="radio-group">
-                        <input type="radio" name="gender" value="male" required>
-                        <span class="radio-text">남자</span>
-                    </label>
-                    <label class="radio-group">
-                        <input type="radio" name="gender" value="female" required>
-                        <span class="radio-text">여자</span>
-                    </label>
-                </div>
-                <button type="submit" class="login-button">가입하기</button>
-                <button type="button" class="signup-button" data-href="{{ url_for('auth.login') }}">로그인으로 돌아가기</button>
-            </form>
+{% extends 'base.html' %} {% block head %}
+<link rel="stylesheet" href="/static/css/join.css" />
+{% endblock %} {% block content %}
+<div class="join-container">
+  <div class="join-card">
+    <h1 class="join-title">회원가입</h1>
+    <form id="joinForm" action="{{ url_for('auth.join') }}" method="POST">
+      <div class="form-group">
+        <label for="user_id">아이디</label>
+        <input
+          type="text"
+          id="user_id"
+          name="user_id"
+          class="form-control"
+          required
+        />
+        <button type="button" class="id-check-btn" id="idCheckBtn">
+          중복확인
+        </button>
+        <div class="error-message" id="userIdError"></div>
+      </div>
+      <div class="form-group">
+        <label for="password">비밀번호</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          required
+        />
+        <div class="password-requirements">
+          비밀번호는 8자 이상, 특수기호를 포함하고, 영어와 숫자를 조합해야
+          합니다.
         </div>
-    </main>
+        <div class="error-message" id="passwordError"></div>
+      </div>
+      <div class="form-group">
+        <label for="password_confirm">비밀번호 확인</label>
+        <input
+          type="password"
+          id="password_confirm"
+          name="password_confirm"
+          class="form-control"
+          required
+        />
+        <div class="error-message" id="passwordConfirmError"></div>
+      </div>
+      <div class="form-group">
+        <label for="nickname">닉네임</label>
+        <input
+          type="text"
+          id="nickname"
+          name="nickname"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="birth_date">생년월일</label>
+        <input
+          type="date"
+          id="birth_date"
+          name="birth_date"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="region">지역</label>
+        <input
+          type="text"
+          id="region"
+          name="region"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="security_question">보안질문</label>
+        <input
+          type="text"
+          id="security_question"
+          name="security_question"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="security_answer">보안답변</label>
+        <input
+          type="text"
+          id="security_answer"
+          name="security_answer"
+          class="form-control"
+          required
+        />
+      </div>
+      <button type="submit" class="join-btn">회원가입</button>
+    </form>
+    <div class="login-link">
+      이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인</a>
+    </div>
+  </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const userIdInput = document.getElementById("user_id");
+    const idCheckBtn = document.getElementById("idCheckBtn");
+    const passwordInput = document.getElementById("password");
+    const passwordConfirmInput = document.getElementById("password_confirm");
+    const joinForm = document.getElementById("joinForm");
+
+    let isUserIdValid = false;
+    let isPasswordValid = false;
+    let isPasswordConfirmValid = false;
+
+    // ID 중복확인 버튼 클릭 이벤트
+    idCheckBtn.addEventListener("click", async function () {
+      const userId = userIdInput.value.trim();
+      if (!userId) {
+        document.getElementById("userIdError").textContent =
+          "아이디를 입력해주세요.";
+        document.getElementById("userIdError").style.display = "block";
+        isUserIdValid = false;
+        return;
+      }
+
+      try {
+        const response = await fetch("/auth/check-id", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: userId }),
+        });
+        const data = await response.json();
+
+        const errorElement = document.getElementById("userIdError");
+        if (data.exists) {
+          errorElement.textContent = "이미 사용 중인 아이디입니다.";
+          errorElement.style.display = "block";
+          isUserIdValid = false;
+        } else {
+          errorElement.textContent = "사용 가능한 아이디입니다.";
+          errorElement.style.color = "#28a745";
+          errorElement.style.display = "block";
+          isUserIdValid = true;
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    });
+
+    // 아이디 입력 시 중복확인 상태 초기화
+    userIdInput.addEventListener("input", function () {
+      document.getElementById("userIdError").textContent = "";
+      document.getElementById("userIdError").style.display = "none";
+      isUserIdValid = false;
+    });
+
+    // 비밀번호 유효성 검사 (실시간)
+    function validatePassword(password) {
+      const minLength = 8;
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+      const hasLetter = /[a-zA-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+
+      return (
+        password.length >= minLength && hasSpecialChar && hasLetter && hasNumber
+      );
+    }
+
+    passwordInput.addEventListener("input", function () {
+      const password = this.value;
+      const errorElement = document.getElementById("passwordError");
+
+      if (!validatePassword(password)) {
+        errorElement.textContent =
+          "비밀번호는 8자 이상, 특수기호를 포함하고, 영어와 숫자를 조합해야 합니다.";
+        errorElement.style.display = "block";
+        isPasswordValid = false;
+      } else {
+        errorElement.textContent = "";
+        errorElement.style.display = "none";
+        isPasswordValid = true;
+      }
+
+      // 비밀번호가 변경되면 비밀번호 확인도 다시 검사
+      if (passwordConfirmInput.value) {
+        passwordConfirmInput.dispatchEvent(new Event("input"));
+      }
+    });
+
+    // 비밀번호 확인 검사 (실시간)
+    passwordConfirmInput.addEventListener("input", function () {
+      const password = passwordInput.value;
+      const confirmPassword = this.value;
+      const errorElement = document.getElementById("passwordConfirmError");
+
+      if (password !== confirmPassword) {
+        errorElement.textContent = "비밀번호가 일치하지 않습니다.";
+        errorElement.style.display = "block";
+        isPasswordConfirmValid = false;
+      } else {
+        errorElement.textContent = "";
+        errorElement.style.display = "none";
+        isPasswordConfirmValid = true;
+      }
+    });
+
+    // 폼 제출 시 유효성 검사
+    joinForm.addEventListener("submit", function (e) {
+      if (!isUserIdValid || !isPasswordValid || !isPasswordConfirmValid) {
+        e.preventDefault();
+        alert("모든 필드를 올바르게 입력해주세요.");
+        return false;
+      }
+      return true;
+    });
+  });
+</script>
+{% endblock %} {% block scripts %}
 <script src="{{ url_for('static', filename='js/join.js') }}"></script>
 {% endblock %}
