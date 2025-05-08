@@ -1,0 +1,313 @@
+.redfont{
+    color: red;
+}
+body{
+    background-color: #f8f8f8;
+}
+
+/* 공통 스타일 */
+:root {
+    --primary-color: #0A8D48;
+    --secondary-color: #FF6B00;
+    --background-color: #FFFFFF;
+    --text-color: #333333;
+    --border-color: #E5E5E5;
+    --input-background: #F8F8F8;
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content {
+    margin-top: 60px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+form {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
+}
+
+.input-group {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--input-background);
+    font-size: 14px;
+    transition: all 0.3s var(--transition-timing);
+    box-sizing: border-box;
+}
+
+.login-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(10, 141, 72, 0.1);
+    outline: none;
+}
+
+/* 구분선 스타일 */
+.divider {
+    position: relative;
+    text-align: center;
+    margin: 24px 0;
+    width: 100%;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--border-color);
+}
+
+/* 버튼 스타일 */
+.login-button, .cancel-button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s var(--transition-timing);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.login-button {
+    background-color: #0A8D48;
+    color: white;
+}
+
+.login-button:hover {
+    background-color: #097C3F;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(10, 141, 72, 0.2);
+}
+
+.login-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.cancel-button {
+    background-color: white;
+    border: 1px solid #0A8D48;
+    color: #0A8D48;
+}
+
+.cancel-button:hover {
+    background-color: #F0F9F3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(10, 141, 72, 0.1);
+}
+
+/* 버튼 그룹 스타일 */
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    width: 100%;
+}
+
+/* 비밀번호 인증 버튼 스타일 */
+.flex-group {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+.flex-group .login-button {
+    width: 30%;
+}
+
+.flex-group .login-input {
+    width: 70%;
+}
+
+/* 확인 메시지 스타일 */
+.confirm {
+    border-radius: 15px;
+    padding: 15px;
+    background-color: rgb(235, 235, 235);
+    width: 100%;
+}
+
+.confirm h5 {
+    margin-bottom: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* 체크박스 스타일 */
+.login-checkbox {
+    margin-right: 8px;
+}
+
+/* 태블릿 스타일 (768px 이상) */
+@media screen and (min-width: 768px) {
+    form {
+        max-width: 480px;
+        padding: 40px;
+    }
+
+    .login-input {
+        padding: 18px;
+        font-size: 18px;
+    }
+
+    .login-button, .cancel-button {
+        padding: 18px;
+        font-size: 18px;
+    }
+}
+
+/* PC 스타일 (1024px 이상) */
+@media screen and (min-width: 1024px) {
+    form {
+        max-width: 400px;
+        padding: 24px;
+    }
+
+    .login-input {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .login-button, .cancel-button {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* 모바일 스타일 (768px 이하) */
+@media screen and (max-width: 768px) {
+    form {
+        padding: 20px;
+    }
+
+    .form-group {
+        padding: 0 12px;
+    }
+
+    .login-input {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .login-button, .cancel-button {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
+
+@media screen and (max-width: 1024px){
+    form>div{
+        display:flex;
+        flex-direction: column;
+        justify-content: center;
+        padding-left: 10%;
+        padding-right: 10%;
+    }
+    input[type="password"]{
+        width: 70%;
+    }
+    button{
+        width:30%;
+    }
+    #passDiv{
+        display: flex;
+        flex-direction: row;
+    }
+
+    form{
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #reason_div{
+        margin-bottom: 10px;
+        padding-bottom: 0px;
+    }
+    textarea{
+        height:100px;
+    }
+    #deleteButton{
+        margin-top: 50px;
+        width: 100%;
+        
+    }
+}
+
+@media screen and (min-width: 1024px) and (max-width: 1920px ){
+    form{
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+        padding-left: auto;
+        padding-right: auto;
+    }
+    form>div{
+        display:flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 100px;
+        background-color: white;
+        max-width: 450px;
+        border-radius: 30px;
+        box-shadow: 0px 20px 80px 5px gray;
+    }
+    #passDiv{
+        display: flex;
+        flex-direction: row;
+    }
+    input[type="password"]{
+        width: 70%;
+    }
+    button{
+        width:30%;
+    }
+    button:hover{
+        box-shadow: 0px 0px 7px 2px var(--primary-color);
+    }
+    #reason_div{
+        margin-bottom: 10px;
+    }
+    textarea{
+        height:150px;
+    }
+    #deleteButton{
+        margin-top: 50px;
+        width: 100%;
+        height: 40px;
+    }
+    #deleteButton:hover{
+        box-shadow: 0px 0px 7px 2px var(--primary-color);
+    }
+}

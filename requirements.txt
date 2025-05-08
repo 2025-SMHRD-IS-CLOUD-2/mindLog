@@ -29,3 +29,6 @@ numpy==1.24.4
 # 개발 도구
 pytest==7.4.0
 pytest-flask==1.2.0
+
+# AI 서비스
+openai==1.12.0
