@@ -79,10 +79,17 @@ function calendar(year,currMonth,today) {
                 .then(data => {
                     data.forEach(element => {
                         
-                        let name = element["NAME"]
-                        let address = element["ADDRESS"]
-                        let appointDate = element["APPOINTMENT_DATE"]
-                        let appointTime = element["APPOINTMENT_TIME"]
+                        let name = element["NAME"];
+                        let address = element["ADDRESS"];
+                        let appointDate = element["APPOINTMENT_DATE"];
+                        let appointTime = element["APPOINTMENT_TIME"];
+                        appointDate = appointDate.replace("GMT","GMT +0900") // 표준시를 한국표준시로 바꿈
+                        appointDate = appointDate.replace("00:00:00",appointTime) // 00:00:00시를 불러온 시간 데이터로 바꿈
+                        console.log(appointDate)
+                        appointDate = new Date(appointDate);
+                        console.log(appointDate)
+                        let appoint = document.createElement("div");
+                        
                         console.log(name)
 
                     });
