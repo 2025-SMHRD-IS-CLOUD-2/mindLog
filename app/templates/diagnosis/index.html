@@ -254,3 +254,1462 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>역학연구를 위한 우울척도 (CES-D)</title>
+    <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
+    <style>
+        /* Variables */
+:root {
+  --primary-color: #2E7D32;  /* 진한 초록색 */
+  --primary-light: #4CAF50; /* 밝은 초록색 */
+  --primary-hover: #1B5E20; /* 호버시 진한 초록색 */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #E0E0E0;
+}
+
+body {
+  width: 360px;
+  margin: 0 auto;
+  background: #f8f8f8;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.survey-container {
+  max-width: 360px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.survey-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.survey-tab {
+  padding: 10px 20px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.survey-tab.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.survey-form {
+  display: none;
+}
+
+.survey-form.active {
+  display: block;
+}
+
+/* Form Elements */
+.info-row, 
+.desc, 
+table, 
+.button-row {
+  margin-bottom: 20px;
+}
+
+/* Table Styles */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 20px;
+}
+
+tr {
+  display: block;
+  background: white;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+tr:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+td {
+  display: block;
+  padding: 20px;
+}
+
+/* Question container */
+.question-container {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.question-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-right: 12px;
+  min-width: 28px;
+  display: inline-block;
+}
+
+.question-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Radio options */
+.radio-group {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  margin-top: 15px;
+}
+
+.radio-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.radio-option:hover {
+  background-color: #f8f9fa;
+}
+
+/* Radio button */
+.radio-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+/* Option label */
+.radio-label {
+  text-align: center;
+  font-size: 14px;
+  color: #495057;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.radio-label br {
+  display: block;
+  margin: 3px 0;
+}
+
+/* Survey Title */
+.survey-form h1 {
+  text-align: center;
+  color: var(--text-primary);
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Info row styling */
+.info-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  flex-wrap: nowrap;  /* 한 줄로 유지 */
+}
+
+.info-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-weight: 500;
+  white-space: nowrap;  /* 레이블 줄바꿈 방지 */
+}
+
+.info-row input,
+.info-row select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100px;  /* 입력 필드 너비 고정 */
+}
+
+.info-row input[type="date"] {
+  width: 130px;  /* 날짜 입력 필드는 조금 더 넓게 */
+}
+
+/* Button styling */
+.button-row {
+  text-align: center;
+  margin-top: 30px;
+  padding: 0 10px;
+}
+
+.button-row button {
+  padding: 12px 24px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.button-row button[type="submit"] {
+  background: var(--primary-color);
+  color: white;
+}
+
+.button-row button[type="reset"] {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.button-row button:hover {
+  opacity: 0.9;
+}
+
+.button-row button[type="submit"]:hover {
+  background: var(--primary-hover);
+}
+
+/* Description Text */
+.desc {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 15px;
+  margin: 20px 0;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Score Result */
+.score-row {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  text-align: center;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .survey-container {
+    margin: 10px;
+    padding: 15px;
+    width: 360px;
+  }
+
+  .survey-form h1 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    word-break: keep-all;
+  }
+
+  .info-row {
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px 10px;
+    justify-content: flex-start;
+  }
+
+  .info-row label {
+    font-size: 14px;
+    white-space: normal;
+  }
+
+  .info-row input,
+  .info-row select {
+    width: 90px;
+  }
+
+  .info-row input[type="date"] {
+    width: 120px;
+  }
+
+  .desc {
+    font-size: 14px;
+    padding: 12px;
+    margin: 15px 0;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .question-text {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .radio-label {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  tr {
+    margin-bottom: 12px;
+  }
+
+  td {
+    padding: 15px;
+  }
+
+  .question-container {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .radio-option {
+    padding: 6px 4px;
+  }
+
+  .radio-label {
+    font-size: 13px;
+  }
+}
+
+/* Small Mobile Screens */
+@media screen and (max-width: 400px) {
+  body {
+    width: 100%;
+  }
+
+  .survey-container {
+    width: 100%;
+    margin: 0;
+    padding: 10px;
+  }
+
+  .survey-form h1 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding: 0 10px;
+  }
+
+  .info-row {
+    padding: 12px 8px;
+    gap: 10px;
+  }
+
+  .info-row label {
+    font-size: 13px;
+  }
+
+  .info-row input,
+  .info-row select {
+    width: 80px;
+    padding: 6px 8px;
+  }
+
+  .info-row input[type="date"] {
+    width: 110px;
+  }
+
+  .desc {
+    font-size: 13px;
+    padding: 10px;
+    line-height: 1.7;
+  }
+
+  .button-row button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+/* Hover effect for radio buttons */
+@media (hover: hover) {
+  td input[type="radio"]:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+}
+
+/*추가 건*/
+.container {
+  padding: 12px 8px 28px 8px;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 18px 0 16px 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px 0;
+  background: #e9ecef;
+  border: none;
+  border-radius: 8px 8px 0 0;
+  font-weight: bold;
+  font-size: 1.05em;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab-btn.active {
+  background: #1fa463;
+  color: #fff;
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.info-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.info-row label {
+  flex: 1;
+  font-size: 0.95em;
+}
+
+.desc {
+  background: #f2f2f2;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.97em;
+  margin-bottom: 14px;
+  color: #444;
+}
+
+.survey-q {
+  background: #fff;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  padding: 16px 10px 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.survey-q .q-title {
+  font-weight: bold;
+  color: #1fa463;
+  font-size: 1.08em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.survey-q .q-title .q-no {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #1fa463;
+  margin-right: 2px;
+}
+
+.survey-q .choices {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  gap: 4px;
+}
+
+.survey-q .choice-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  font-size: 0.97em;
+  padding: 6px 0;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.survey-q input[type="radio"] {
+  accent-color: #1fa463;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 4px;
+}
+
+.survey-q .choice-label:hover {
+  background: #f2f8f5;
+}
+
+.survey-q .choice-label small {
+  color: #888;
+  font-size: 0.93em;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.button-row button {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  border-radius: 8px;
+  background: #1fa463;
+  color: #fff;
+  font-weight: bold;
+}
+
+.button-row button[type="reset"] {
+  background: #888;
+}
+
+.score-row {
+  margin-top: 16px;
+  font-weight: bold;
+  color: #1fa463;
+  font-size: 1.08em;
+}
+
+.result-table {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.result-table th,
+.result-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.result-table th {
+  background: #1fa463;
+  color: #fff;
+  font-weight: bold;
+}
+
+.result-table tr:last-child td {
+  border-bottom: none;
+}
+
+.result-table tr:nth-child(even) {
+  background: #f8f8f8;
+}
+
+.result-container {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.result-title {
+  color: #1fa463;
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+@media (max-width: 400px) {
+  body {
+      width: 100vw;
+  }
+
+  .container {
+      padding: 8px 2px 16px 2px;
+  }
+
+  .survey-q {
+      padding: 12px 4px 10px 8px;
+  }
+}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="info-row">
+            <label>연령 <input type="text" name="age" placeholder="숫자만 입력해 주세요"></label>
+            <label>성별
+                <select name="gender">
+                    <option value="">선택</option>
+                    <option value="male">남</option>
+                    <option value="female">여</option>
+                </select>
+            </label>
+            <label>실시일 <input type="date" name="date"></label>
+        </div>
+        <!-- 상단 탭 메뉴 -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="cesd">CES-D</button>
+            <button class="tab-btn" data-tab="survey2">CESD-10-D</button>
+            <button class="tab-btn" data-tab="survey3">PHQ-9</button>
+        </div>
+        <!-- CES-D 설문 -->
+        <div class="tab-content active" id="cesd">
+            <h1>역학연구를 위한 우울척도 (CES-D)</h1>
+            <form id="cesd-form">
+
+                <div class="desc">
+                    아래에 문항을 잘 읽으시고, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 문항에 V표를 하십시오.<br>
+                    한 문항도 빠짐없이 답해 주시기 바랍니다.
+                </div>
+                <!-- 예시: 1번 문항만, 실제로는 20문항 반복 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">1.</span> 평소에는 상기지지 않았던 일이 상기시게 느껴졌다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q1" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+
+                <!-- 2번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">2.</span> 별로 먹고 싶지 않았다, 입맛이 없었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q2" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 3번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">3.</span> 가족이나 친구가 도와주더라도 울적한 기분을 떨쳐버릴 수 없었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q3" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 4번 (역채점) -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">4.</span> 나도 다른 사람만큼 기분이 좋았다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q4" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 5번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">5.</span> 하고 있는 일에 마음을 집중하기가 힘들었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q5" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 6번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">6.</span> 우울했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q6" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 7번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">7.</span> 하는 일마다 힘들게 느껴졌다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q7" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 8번 (역채점) -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">8.</span> 미래에 대해 희망적이라고 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q8" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 9번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">9.</span> 내 인생은 실패작이라는 생각했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q9" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 10번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">10.</span> 무서움을 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q10" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q10"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q10"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q10"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 11번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">11.</span> 잠을 설쳤다</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q11" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q11"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q11"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q11"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 12번 (역채점) -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">12.</span> 행복했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q12" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q12"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q12"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q12"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 13번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">13.</span> 평소보다 말을 적게 했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q13" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q13"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q13"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q13"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 14번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">14.</span> 외로움을 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q14" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q14"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q14"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q14"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 15번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">15.</span> 사람들이 불친절했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q15" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q15"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q15"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q15"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 16번 (역채점) -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">16.</span> 인생이 즐거웠다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q16" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q16"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q16"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q16"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 17번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">17.</span> 울음을 터뜨린 적이 있었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q17" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q17"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q17"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q17"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 18번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">18.</span> 슬픔을 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q18" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q18"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q18"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q18"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 19번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">19.</span> 사람들이 나를 싫어한다고 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q19" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q19"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q19"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q19"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+                <!-- 20번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">20.</span> 일을 제대로 진척시킬 수 없었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q20" value="0" required>거의
+                            드물게<br><small>(1일 이하)</small></label>
+                        <label class="choice-label"><input type="radio" name="q20"
+                                value="1">때때로<br><small>(1~2일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q20"
+                                value="2">상당히<br><small>(3~4일)</small></label>
+                        <label class="choice-label"><input type="radio" name="q20"
+                                value="3">대부분<br><small>(5~7일)</small></label>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button type="submit">제출</button>
+                    <button type="reset">초기화</button>
+                </div>
+                <div class="result-container">
+                    <div class="result-title">검사 결과</div>
+                    <div class="score-row" id="score-result-cesd"></div>
+                    <table class="result-table" id="result-table-cesd">
+                        <thead>
+                            <tr>
+                                <th>점수 범위</th>
+                                <th>해석</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>21점 미만</td>
+                                <td>정상 범위</td>
+                            </tr>
+                            <tr>
+                                <td>21-24점</td>
+                                <td>가벼운~중간 우울</td>
+                            </tr>
+                            <tr>
+                                <td>25점 이상</td>
+                                <td>심한 우울</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+        <!-- 설문2 -->
+        <div class="tab-content" id="survey2">
+
+            <h1>역학연구를 위한 우울척도-단축형 (CESD-10-D)</h1>
+            <form id="cesd10d-form">
+                <p class="desc">
+                    아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br>
+                    한 문항도 빠짐없이 답해 주시기 바랍니다.
+                </p>
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">1.</span> 비교적 잘 지냈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q1" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 2번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">2.</span> 상당히 우울했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q2" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 3번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">3.</span> 모든 일들이 힘겹게 느껴졌다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q3" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 4번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">4.</span> 잠을 설쳤다(잠을 잘 이루지 못했다).</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q4" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 5번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">5.</span> 세상에 홀로 있는 듯한 외로움을 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q5" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 6번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">6.</span> 큰 불만 없이 생활했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q6" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 7번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">7.</span> 사람들이 나에게 차갑게 대하는 것 같았다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q7" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 8번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">8.</span> 마음이 슬펐다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q8" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 9번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">9.</span> 사람들이 나를 싫어하는 것 같았다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q9" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <!-- 10번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">10.</span> 도무지 뭘 해 나갈 엄두가 나지 않았다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q10" value="0" required>아니다
+                            <br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q10"
+                                value="1">그렇다<br><small>(0점)</small></label>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button type="submit">제출</button>
+                    <button type="reset">초기화</button>
+                </div>
+                <div class="result-container">
+                    <div class="result-title">검사 결과</div>
+                    <div class="score-row" id="score-result-cesd10d"></div>
+                    <table class="result-table" id="result-table-cesd10d">
+                        <thead>
+                            <tr>
+                                <th>점수 범위</th>
+                                <th>해석</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>10점 미만</td>
+                                <td>정상 범위</td>
+                            </tr>
+                            <tr>
+                                <td>10점 이상</td>
+                                <td>우울 위험군</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+
+        <!-- 설문3 -->
+        <div class="tab-content" id="survey3">
+
+            <h1>역학연구를 위한 우울척도-단축형 (PHQ-9)</h1>
+            <form id="phq-9-form">
+                <p class="desc">
+                    아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br>
+                    한 문항도 빠짐없이 답해 주시기 바랍니다.
+                </p>
+                <!-- 1번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">1.</span> 기분이 가라앉거나,우울하거나,<br>희망이 없다고 느꼈다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q1" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q1"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 2번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">2.</span> 평소 하던 일에 대한 흥미가 없어지거나<br> 즐거움을 느끼지 못했다. </div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q2" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q2"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 3번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">3.</span> 잠들기가 어렵거나 자주 깼다/혹은 너무 많이 잤다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q3" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q3"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 4번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">4.</span> 평소보다 식욕이 줄었다/혹은 평소보다 많이 먹었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q4" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q4"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 5번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">5.</span> 다른 사람들이 눈치 챌 정도로 평소보다 말과 행동이 느려졌다/
+                        혹은 너무 안절부절 못해서 가만히 앉아 있지 못했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q5" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q5"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 6번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">6.</span> 피곤하고 기운이 없었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q6" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q6"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 7번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">7.</span> 내가 잘못했거나, 실패했다는 생각이 들었다/<br>
+                        혹은 자신과 가족을 실망시켰다고 생각했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q7" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q7"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 8번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">8.</span> 신문을 읽거나TV를 보는 것과 같은<br>일상적인 일에도 집중을 할수가 없었다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q8" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q8"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+                <!-- 9번 -->
+                <div class="survey-q">
+                    <div class="q-title"><span class="q-no">9.</span> 차라리 죽는것이 더 낫겠다고 생각했다/<br>혹은 자해할 생각을 했다.</div>
+                    <div class="choices">
+                        <label class="choice-label"><input type="radio" name="q9" value="0" required>없음
+                            <br><small>(0점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="1">2~6일<br><small>(1점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="1">7~12일<br><small>(2점)</small></label>
+                        <label class="choice-label"><input type="radio" name="q9"
+                                value="1">거의매일<br><small>(3점)</small></label>
+                    </div>
+                </div>
+
+
+                <div class="button-row">
+                    <button type="submit">제출</button>
+                    <button type="reset">초기화</button>
+                </div>
+                <div class="result-container">
+                    <div class="result-title">검사 결과</div>
+                    <div class="score-row" id="score-result-phq9"></div>
+                    <table class="result-table" id="result-table-phq9">
+                        <thead>
+                            <tr>
+                                <th>점수 범위</th>
+                                <th>해석</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>5점 미만</td>
+                                <td>정상 또는 최소 우울</td>
+                            </tr>
+                            <tr>
+                                <td>5-9점</td>
+                                <td>경미한 우울</td>
+                            </tr>
+                            <tr>
+                                <td>10-14점</td>
+                                <td>중등도 우울</td>
+                            </tr>
+                            <tr>
+                                <td>15-19점</td>
+                                <td>중증 우울</td>
+                            </tr>
+                            <tr>
+                                <td>20점 이상</td>
+                                <td>극심한 우울</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            // 페이지 로드 시 오늘 날짜 자동 설정
+            document.addEventListener('DOMContentLoaded', function() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const formattedDate = `${year}-${month}-${day}`;
+                document.querySelector('input[name="date"]').value = formattedDate;
+            });
+
+            // 탭 전환
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(tc => tc.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // 입력값 검증 함수
+            function validateInputs() {
+                const age = document.querySelector('input[name="age"]').value;
+                const gender = document.querySelector('select[name="gender"]').value;
+
+                if (!age) {
+                    alert('연령을 입력해주세요.');
+                    return false;
+                }
+
+                if (!gender) {
+                    alert('성별을 선택해주세요.');
+                    return false;
+                }
+
+                // 연령이 숫자인지 확인
+                if (isNaN(age) || age < 0 || age > 120) {
+                    alert('올바른 연령을 입력해주세요. (0-120세)');
+                    return false;
+                }
+
+                return true;
+            }
+
+            document.getElementById('cesd-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                if (!validateInputs()) return;
+                
+                let total = 0;
+                const reverse = [4, 8, 12, 16];
+                for (let i = 1; i <= 20; i++) {
+                    const checked = document.querySelector('input[name="q' + i + '"]:checked');
+                    let val = checked ? Number(checked.value) : null;
+                    if (val === null) {
+                        alert(i + "번 문항에 답변하지 않았습니다.");
+                        return;
+                    }
+                    if (reverse.includes(i)) val = 3 - val; // 역채점
+                    total += val;
+                }
+                let message = `총점: ${total}점`;
+                if (total < 21) {
+                    message += " (정상 범위)";
+                } else if (total < 25) {
+                    message += " (가벼운~중간 우울, 주위에 도움 요청 권고)";
+                } else {
+                    message += " (심한 우울, 전문가 상담 권고)";
+                }
+                document.getElementById('score-result-cesd').textContent = message;
+                alert(message);
+            });
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const form2 = document.getElementById("cesd10d-form");
+                const scoreResult2 = document.getElementById("score-result-cesd10d");
+
+                form2.addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    if (!validateInputs()) return;
+                    
+                    let total = 0;
+
+                    for (let i = 1; i <= 10; i++) {
+                        const radios = form2.querySelectorAll('input[name="q' + i + '"]');
+                        let value = null;
+                        for (const radio of radios) {
+                            if (radio.checked) {
+                                value = parseInt(radio.value, 10);
+                                break;
+                            }
+                        }
+                        if (value === null) {
+                            alert(i + "번 문항에 답변하지 않았습니다.");
+                            return;
+                        }
+                        // 1, 6, 8번은 역채점
+                        if ([1, 6, 8].includes(i)) value = 1 - value;
+                        total += value;
+                    }
+
+                    let message = `총점: ${total}점`;
+                    if (total >= 10) {
+                        message += " (우울 위험군)";
+                    } else {
+                        message += " (정상 범위)";
+                    }
+                    scoreResult2.textContent = message;
+                    alert(message);
+                });
+
+                form2.addEventListener("reset", function () {
+                    setTimeout(function () {
+                        scoreResult2.textContent = "";
+                    }, 10);
+                });
+            });
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const form3 = document.getElementById("phq-9-form");
+                const scoreResult3 = document.getElementById("score-result-phq9");
+
+                form3.addEventListener("submit", function (event) {
+                    event.preventDefault();
+                    if (!validateInputs()) return;
+                    
+                    let total = 0;
+
+                    for (let i = 1; i <= 9; i++) {
+                        const radios = form3.querySelectorAll('input[name="q' + i + '"]');
+                        let value = null;
+                        for (const radio of radios) {
+                            if (radio.checked) {
+                                value = parseInt(radio.value, 10);
+                                break;
+                            }
+                        }
+                        if (value === null) {
+                            alert(i + "번 문항에 답변하지 않았습니다.");
+                            return;
+                        }
+                        total += value;
+                    }
+
+                    let message = `총점: ${total}점\n`;
+                    if (total < 5) {
+                        message += "정상 또는 최소 우울";
+                    } else if (total < 10) {
+                        message += "경미한 우울";
+                    } else if (total < 15) {
+                        message += "중등도 우울";
+                    } else if (total < 20) {
+                        message += "중증 우울";
+                    } else {
+                        message += "극심한 우울";
+                    }
+                    scoreResult3.textContent = message;
+                    alert(message);
+                });
+
+                form3.addEventListener("reset", function () {
+                    setTimeout(function () {
+                        scoreResult3.textContent = "";
+                    }, 10);
+                });
+            });
+
+            // 공통 초기화 로직 통합
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('reset', function () {
+                    setTimeout(() => {
+                        document.querySelectorAll('[id^="score-result-"]').forEach(el => {
+                            el.textContent = '';
+                        });
+                        // 공통 필드 초기화
+                        document.querySelector('input[name="age"]').value = '';
+                        document.querySelector('select[name="gender"]').selectedIndex = 0;
+                        document.querySelector('input[name="date"]').value = '';
+                    }, 10);
+                });
+            });
+
+        </script>
+</body>
+
+</html>
