@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../../static/css/schedule.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='/css/schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
 </head>
 <body>      
     <div id = 'calendar'>
@@ -25,15 +25,18 @@
     </div>
     <div id = 'schedules'>
         <div id = "scheduleDate">{{today.year}}년{{today.month}}월 {{today.day}}일</div>
+        <div id = "schedule">
         {% if result%}
         {% for item in result %}
-        <div id = "schedule"><div class = 'center-info'><p>{{item.NAME}}</p><span class = 'center-info'>{{item.ADDRESS}}</span>
+        <div class = 'center-info'><p>{{item.NAME}}</p><span class = 'center-info'>{{item.ADDRESS}}</span>
             <span class = "center-info">{{item.CONTACT}}</span></div>
             <div class = 'time'><p>{{item.APPOINTMENT_DATE.year}}년 {{item.APPOINTMENT_DATE.month}}월 {{item.APPOINTMENT_DATE.day}}일</p>
-            <p>{{item.APPOINTMENT_TIME.hour}}시 {{item.APPOINTMENT_TIME.minute}}분</p></div></div>
+            <p>{{item.APPOINTMENT_TIME.hour}}시 {{item.APPOINTMENT_TIME.minute}}분</p></div>
         {% endfor%}
-        {% endif %}
-        
+        {% else %}
+            <p>등록된 일정이 없습니다.</p>
+        {% endif%}
+        </div>
     </div>
     <script src = "../../static/js/schedule.js"></script>
 </body>

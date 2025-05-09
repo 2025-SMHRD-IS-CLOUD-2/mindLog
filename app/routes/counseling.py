@@ -26,7 +26,7 @@ def schedule():
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
             WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
             AND A.CENTER_SEQ = C.CENTER_SEQ
-            AND APPOINTMENT_DATE = '2025-05-07'""")
+            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             print(sql)
             cursor.execute(sql)
             result = cursor.fetchall()
@@ -170,6 +170,10 @@ def appointment(center_id):
         return redirect(url_for('auth.login'))
     
     # 상담센터 정보 조회
+    center = request.get_json()
+    name = center.get("name")
+    address = center.get("address")
+    contact = center.get("contact")
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
