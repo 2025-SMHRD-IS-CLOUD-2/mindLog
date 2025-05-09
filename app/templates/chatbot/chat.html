@@ -1,20 +1,22 @@
-<!DOCTYPE html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>마음챙김 챗봇</title>
-    <link rel="stylesheet" href="/static/css/chatbot.css" />
-  </head>
-  <body>
-    <div class="chat-header">
-      <div class="logo"></div>
-      <div class="icons">
-        <img src="/static/img/bell.svg" class="icon" alt="알림" />
-        <img src="/static/img/menu.svg" class="icon" alt="메뉴" />
-      </div>
-    </div>
-    <div id="chat-area"></div>
+{% extends 'base.html' %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/chatbot.css') }}"
+/>
+{% endblock %} {% block content %}
+<div
+  style="
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 80vh;
+  "
+>
+  <div class="chatbot-center-container">
+    <div
+      id="chat-area"
+      style="flex: 1; min-height: 300px; margin-bottom: 16px"
+    ></div>
     <form class="chat-input-bar" onsubmit="sendMessage(); return false;">
       <input
         type="text"
@@ -28,45 +30,74 @@
         </svg>
       </button>
     </form>
-    <script>
-      function appendMessage(message, isUser) {
-        const row = document.createElement("div");
-        row.className = "msg-row " + (isUser ? "user" : "bot");
-        const bubble = document.createElement("div");
-        bubble.className = "msg-bubble";
-        bubble.textContent = message;
-        row.appendChild(bubble);
-        document.getElementById("chat-area").appendChild(row);
-        document.getElementById("chat-area").scrollTop =
-          document.getElementById("chat-area").scrollHeight;
+  </div>
+</div>
+<script>
+  // 페이지 진입 시 안내 메시지 출력
+  window.addEventListener("DOMContentLoaded", function () {
+    setTimeout(() => {
+      appendMessage("안녕하세요. 마음로그 상담 챗봇입니다.", false);
+      setTimeout(() => {
+        appendMessage(
+          "자유상담과 자가문진표 작성에 도움을 드릴 수 있습니다.",
+          false
+        );
+        setTimeout(() => {
+          appendMessage("무엇을 도와드릴까요?", false);
+        }, 800);
+      }, 800);
+    }, 300);
+  });
+
+  function appendMessage(message, isUser) {
+    const row = document.createElement("div");
+    row.className = "msg-row " + (isUser ? "user" : "bot");
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble";
+    bubble.textContent = message;
+    row.appendChild(bubble);
+    document.getElementById("chat-area").appendChild(row);
+    document.getElementById("chat-area").scrollTop =
+      document.getElementById("chat-area").scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById("user-input");
+    const message = input.value.trim();
+    if (!message) return;
+    appendMessage(message, true);
+    input.value = "";
+
+    // 서버로 메시지 전송
+    const res = await fetch("/chatbot/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `message=${encodeURIComponent(message)}`,
+    });
+    const data = await res.json();
+    if (Array.isArray(data.botResponse)) {
+      data.botResponse.forEach((msg) => appendMessage(msg, false));
+    } else if (data.botResponse) {
+      appendMessage(data.botResponse, false);
+    } else if (data.error) {
+      alert(data.error);
+    }
+  }
+  // 엔터키로 전송
+  document
+    .getElementById("user-input")
+    .addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
       }
-      async function sendMessage() {
-        const input = document.getElementById("user-input");
-        const message = input.value.trim();
-        if (!message) return;
-        appendMessage(message, true);
-        input.value = "";
-        const res = await fetch("/chatbot/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: `message=${encodeURIComponent(message)}`,
-        });
-        const data = await res.json();
-        if (data.botResponse) {
-          appendMessage(data.botResponse, false);
-        } else if (data.error) {
-          alert(data.error);
-        }
-      }
-      // 엔터키로 전송
-      document
-        .getElementById("user-input")
-        .addEventListener("keydown", function (e) {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            sendMessage();
-          }
-        });
-    </script>
-  </body>
-</html>
+    });
+
+  // 새로고침 시 남은 자유상담 메시지 저장
+  window.addEventListener("beforeunload", function (e) {
+    // 서버에 버퍼 저장 요청 (비동기)
+    navigator.sendBeacon && navigator.sendBeacon("/chatbot/save_buffer");
+    // fetch로도 가능하지만, sendBeacon이 더 안전하게 전송됨
+  });
+</script>
+{% endblock %}

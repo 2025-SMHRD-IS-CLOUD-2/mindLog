@@ -3,7 +3,7 @@ import pymysql
 from datetime import datetime
 from config import Config
 import re
-from app.ai.chatbot import ChatbotService
+from app.ai.chatbot import ChatbotService, user_chat_buffer
 
 # 챗봇 블루프린트 정의
 chatbot_bp = Blueprint('chatbot', __name__)
@@ -62,6 +62,23 @@ def history():
     return render_template('chatbot/history.html',
                           title='mindLog - 챗봇 대화 내역',
                           chat_history=chat_history)
+
+@chatbot_bp.route('/save_buffer', methods=['POST'])
+def save_buffer():
+    if 'user_id' not in session:
+        return jsonify({'error': '로그인이 필요합니다.'}), 401
+    user_id = session['user_id']
+    chatbot_service = ChatbotService()
+    # 남은 메시지 있으면 저장
+    if user_id in user_chat_buffer and user_chat_buffer[user_id]:
+        concat_text = '\n'.join(user_chat_buffer[user_id])
+        depression_result = chatbot_service.depression_model.predict(concat_text)
+        prob = depression_result['depression_probability']
+        risk_level = depression_result['label_name']
+        chatbot_service.save_diagnosis_result(user_id, int(prob * 100), risk_level, concat_text)
+        user_chat_buffer[user_id] = []
+        return jsonify({'result': 'saved'})
+    return jsonify({'result': 'no_data'})
 
 # 유틸리티 함수
 def get_chat_history(user_id, limit=50):

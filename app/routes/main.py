@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user, login_required
 import pymysql
 from config import Config
+import datetime
 
 # 메인 블루프린트 정의
 main_bp = Blueprint('main', __name__)
@@ -20,11 +21,11 @@ def dashboard():
         flash('대시보드에 접근하려면 로그인이 필요합니다.', 'warning')
         return redirect(url_for('auth.login'))
     
-    # 센터 정보 가져오기
-    centers = get_nearby_centers(session.get('user_location', '서울'))
-    
     # 사용자 정보 가져오기
     user_info = get_user_info(session.get('user_id'))
+    region = user_info.get('region', '서울')
+    # 센터 정보 가져오기
+    centers = get_nearby_centers(region)
     
     return render_template(
         'main.html', 
@@ -68,26 +69,40 @@ def get_notifications():
     return jsonify({"notifications": notifications})
 
 # 유틸리티 함수
-def get_nearby_centers(location):
+def get_nearby_centers(region):
     """위치 기반으로 주변 상담센터 정보 가져오기"""
-    # 실제 구현에서는 데이터베이스에서 가져와야 함
-    # 예시 데이터
-    centers = [
-        {
-            "name": "마음돌봄 심리상담센터",
-            "type": "심리상담센터",
-            "address": f"{location} 남구 봉선로 123",
-            "phone": "062-123-4567",
-            "distance": "1.5km"
-        },
-        {
-            "name": "희망 심리상담소",
-            "type": "심리상담센터",
-            "address": f"{location} 남구 방림로 789",
-            "phone": "062-555-6789",
-            "distance": "3.1km"
-        }
-    ]
+    # region이 없으면 '서울'로 기본값 설정
+    if not region:
+        region = '서울'
+
+    conn = None
+    centers = []
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor(pymysql.cursors.DictCursor) as cur:
+            sql = "SELECT * FROM COUNSELINGCENTERS WHERE ADDRESS LIKE %s"
+            cur.execute(sql, (f"%{region}%",))
+            results = cur.fetchall()
+            for row in results:
+                centers.append({
+                    "name": row['NAME'],
+                    "type": "청소년상담복지센터",
+                    "address": row['ADDRESS'],
+                    "phone": row['CONTACT'],
+                    "distance": ""  # 거리 계산 불가, 빈 값
+                })
+    except Exception as e:
+        print(f"센터 정보 조회 오류: {e}")
+    finally:
+        if conn:
+            conn.close()
     return centers
 
 def get_user_info(user_id):
@@ -105,20 +120,25 @@ def get_user_info(user_id):
         
         with conn.cursor(pymysql.cursors.DictCursor) as cur:
             # 사용자 정보 조회
-            cur.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+            cur.execute("SELECT * FROM USERS WHERE USER_SEQ = %s", (user_id,))
             user = cur.fetchone()
             
             if user:
                 # 가입일 계산
-                import datetime
-                join_date = user.get('created_at')
-                today = datetime.datetime.now()
-                days_joined = (today - join_date).days if join_date else 0
-                
+                today = datetime.datetime.now().date()
+                join_date = user.get('CREATED_AT')
+                days_joined = 0
+                if join_date:
+                    if isinstance(join_date, str):
+                        join_date = datetime.datetime.strptime(join_date, '%Y-%m-%d %H:%M:%S').date()
+                    else:
+                        join_date = join_date.date()
+                    days_joined = (today - join_date).days
                 return {
-                    "id": user.get('id'),
-                    "username": user.get('username'),
-                    "nickname": user.get('nickname') or user.get('username'),
+                    "id": user.get('USER_SEQ'),
+                    "username": user.get('USER_ID'),
+                    "nickname": user.get('NICKNAME') or user.get('USER_ID'),
+                    "region": user.get('REGION'),
                     "days_joined": days_joined
                 }
             

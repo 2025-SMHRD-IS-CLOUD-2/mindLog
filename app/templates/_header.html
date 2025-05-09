@@ -22,5 +22,8 @@
         <span></span>
       </button>
     </div>
+    {% if session.user_id %}
+    <a href="{{ url_for('auth.logout') }}" class="logout-btn">로그아웃</a>
+    {% endif %}
   </div>
 </header>

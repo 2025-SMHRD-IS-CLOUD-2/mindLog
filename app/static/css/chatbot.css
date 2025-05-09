@@ -1,7 +1,6 @@
 body {
   margin: 0;
   padding: 0;
-  background: #eaffea;
   font-family: "Noto Sans KR", sans-serif;
   height: 100vh;
   display: flex;
@@ -14,6 +13,8 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  max-height: 100%;
 }
 .msg-row {
   display: flex;
@@ -30,9 +31,10 @@ body {
   padding: 10px 16px;
   border-radius: 18px;
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.1;
   word-break: break-all;
   box-shadow: 0 1px 2px #0001;
+  white-space: pre-line;
 }
 .msg-row.user .msg-bubble {
   background: #fff;
@@ -43,17 +45,22 @@ body {
   background: #aee9c7;
   color: #222;
   border-bottom-left-radius: 6px;
+  padding: 16px 20px;
+}
+.msg-row.bot .msg-bubble:has(br) {
+  line-height: 1.2;
 }
 .chat-input-bar {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  /* position: fixed; */
+  /* left: 0; */
+  /* right: 0; */
+  /* bottom: 0; */
   background: #eaffea;
   padding: 8px 8px 8px 8px;
   display: flex;
   align-items: center;
   border-top: 1px solid #c8e6c9;
+  margin-top: auto;
 }
 .chat-input-bar input {
   flex: 1;
@@ -84,4 +91,17 @@ body {
   width: 22px;
   height: 22px;
   display: block;
+}
+.chatbot-center-container {
+  min-width: 400px;
+  max-width: 400px;
+  margin: 100px auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+  padding: 32px 16px 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  height: 700px;
 }

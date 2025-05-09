@@ -21,8 +21,11 @@ def login():
         password = request.form.get('user_pw')
         remember = request.form.get('remember') == 'on'
         
+        print(f"[로그인 시도] 사용자: {username}")  # 로그인 시도 로그
+        
         # 입력값 검증
         if not username or not password:
+            print("[로그인 실패] 아이디 또는 비밀번호 미입력")  # 실패 로그
             flash('아이디와 비밀번호를 모두 입력해주세요.', 'danger')
             return render_template('auth/login.html', title='mindLog - 로그인')
         
@@ -44,23 +47,26 @@ def login():
                 cur.execute(sql, (username,))
                 user = cur.fetchone()
                 
-                if user and bcrypt.check_password_hash(user['password_hash'], password):
+                if user and bcrypt.check_password_hash(user['PASSWORD_HASH'], password):
                     # 세션에 사용자 정보 저장
-                    session['user_id'] = user['id']
-                    session['username'] = user['username']
+                    session['user_id'] = user['USER_SEQ']
+                    session['username'] = user['USER_ID']
                     session['logged_in'] = True
                     
-                    # 마지막 로그인 시간 업데이트
-                    update_sql = "UPDATE users SET last_login = %s WHERE id = %s"
-                    cur.execute(update_sql, (datetime.now(), user['id']))
-                    conn.commit()
+                    # 마지막 로그인 시간 업데이트 (불필요하므로 주석 처리)
+                    # update_sql = "UPDATE USERS SET LAST_LOGIN = %s WHERE USER_SEQ = %s"
+                    # cur.execute(update_sql, (datetime.now(), user['USER_SEQ']))
+                    # conn.commit()
                     
+                    print(f"[로그인 성공] 사용자: {username}")  # 성공 로그
                     flash('로그인 되었습니다!', 'success')
                     next_page = request.args.get('next')
                     return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
                 else:
+                    print(f"[로그인 실패] 사용자: {username} - 아이디/비밀번호 불일치")  # 실패 로그
                     flash('로그인 실패. 아이디와 비밀번호를 확인해주세요.', 'danger')
         except Exception as e:
+            print(f"[로그인 오류] 사용자: {username} - {str(e)}")  # 오류 로그
             flash(f'로그인 중 오류가 발생했습니다: {e}', 'danger')
         finally:
             if conn:
@@ -150,7 +156,7 @@ def profile():
         )
         
         with conn.cursor(pymysql.cursors.DictCursor) as cur:
-            sql = "SELECT * FROM users WHERE id = %s"
+            sql = "SELECT * FROM USERS WHERE id = %s"
             cur.execute(sql, (session['user_id'],))
             user_data = cur.fetchone()
             
@@ -166,7 +172,7 @@ def profile():
                 
                 # 닉네임 변경
                 if nickname and nickname != user_data['nickname']:
-                    update_sql = "UPDATE users SET nickname = %s WHERE id = %s"
+                    update_sql = "UPDATE USERS SET nickname = %s WHERE id = %s"
                     cur.execute(update_sql, (nickname, session['user_id']))
                     conn.commit()
                     flash('닉네임이 변경되었습니다.', 'success')
@@ -181,13 +187,13 @@ def profile():
                             flash('새 비밀번호는 8자 이상이며, 영문/숫자/특수문자를 포함해야 합니다.', 'danger')
                         else:
                             hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
-                            update_sql = "UPDATE users SET password_hash = %s WHERE id = %s"
+                            update_sql = "UPDATE USERS SET password_hash = %s WHERE id = %s"
                             cur.execute(update_sql, (hashed_password, session['user_id']))
                             conn.commit()
                             flash('비밀번호가 변경되었습니다.', 'success')
                 
                 # 수정된 정보로 업데이트
-                sql = "SELECT * FROM users WHERE id = %s"
+                sql = "SELECT * FROM USERS WHERE id = %s"
                 cur.execute(sql, (session['user_id'],))
                 user_data = cur.fetchone()
     except Exception as e:
@@ -229,7 +235,7 @@ def delete_account():
             
             with conn.cursor(pymysql.cursors.DictCursor) as cur:
                 # 사용자 조회 및 비밀번호 확인
-                sql = "SELECT * FROM users WHERE id = %s"
+                sql = "SELECT * FROM USERS WHERE id = %s"
                 cur.execute(sql, (session['user_id'],))
                 user = cur.fetchone()
                 
@@ -242,7 +248,7 @@ def delete_account():
                 cur.execute(sql, (session['user_id'], reason, datetime.now()))
                 
                 # 사용자 정보 삭제 (또는 비활성화)
-                sql = "UPDATE users SET is_active = 0, withdrawn_at = %s WHERE id = %s"
+                sql = "UPDATE USERS SET is_active = 0, withdrawn_at = %s WHERE id = %s"
                 cur.execute(sql, (datetime.now(), session['user_id']))
                 conn.commit()
                 
@@ -288,7 +294,7 @@ def find_password():
             
             with conn.cursor(pymysql.cursors.DictCursor) as cur:
                 # 사용자 조회
-                sql = "SELECT * FROM users WHERE username = %s AND email = %s"
+                sql = "SELECT * FROM USERS WHERE username = %s AND email = %s"
                 cur.execute(sql, (username, email))
                 user = cur.fetchone()
                 
@@ -302,7 +308,7 @@ def find_password():
                     hashed_password = bcrypt.generate_password_hash(temp_password).decode('utf-8')
                     
                     # 비밀번호 업데이트
-                    update_sql = "UPDATE users SET password_hash = %s, password_reset_at = %s WHERE id = %s"
+                    update_sql = "UPDATE USERS SET password_hash = %s, password_reset_at = %s WHERE id = %s"
                     cur.execute(update_sql, (hashed_password, datetime.now(), user['id']))
                     conn.commit()
                     

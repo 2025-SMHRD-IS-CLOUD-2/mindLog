@@ -12,6 +12,9 @@ from app.ai.depression_model import DepressionModel
 env_path = Path(__file__).parent / '.env'
 load_dotenv(env_path)
 
+# 사용자별 자유상담 메시지 임시 저장 버퍼 (서버 메모리)
+user_chat_buffer = {}
+
 class ChatbotService:
     def __init__(self):
         # OpenAI API 키 설정
@@ -109,14 +112,16 @@ class ChatbotService:
         if user_id is not None:
             self.current_user_id = user_id
         if self.survey_questions:
-            return f"자가진단({survey_type})을 시작할게요!\n{self.survey_questions[0]['text']}\n{self._format_options(self.survey_questions[0]['options'])}"
+            msg1 = f"알겠어요 자가진단({survey_type})을 시작할게요! 마음 편히 대답해주세요!\n\n{self.survey_questions[0]['text']}"
+            msg2 = self._format_options(self.survey_questions[0]['options'])
+            return [msg1, msg2]
         else:
             self.survey_in_progress = False
-            return "설문 문항을 불러오지 못했습니다. 관리자에게 문의해 주세요."
+            return ["설문 문항을 불러오지 못했습니다. 관리자에게 문의해 주세요."]
 
     def answer_survey(self, answer):
         if not self.survey_in_progress or self.survey_ended:
-            return "설문이 이미 종료되었거나 진행 중이 아닙니다."
+            return ["설문이 이미 종료되었거나 진행 중이 아닙니다."]
         # 답변을 score로 저장
         options = self.survey_questions[self.current_question_idx]['options']
         score_to_save = None
@@ -130,17 +135,23 @@ class ChatbotService:
             self.survey_answers.append(answer)  # fallback
         self.current_question_idx += 1
         if self.current_question_idx < len(self.survey_questions):
-            # 다음 질문 반환
             q = self.survey_questions[self.current_question_idx]
-            return f"{q['text']}\n{self._format_options(q['options'])}"
+            msg1 = q['text']
+            msg2 = self._format_options(q['options'])
+            return [msg1, msg2]
         else:
-            # 설문 종료, 점수 계산 및 결과 안내
             self.survey_in_progress = False
             self.survey_ended = True
-            return self.calculate_survey_result()
+            return [
+                "문항이 모두 끝났습니다. 결과를 준비 중이니 잠시만 기다려 주세요.",
+                self.calculate_survey_result()
+            ]
 
     def save_assessment_history(self, user_id, assessment_type, score, risk_level, details):
         """설문 결과를 DB에 저장"""
+        import json
+        if isinstance(details, (list, dict)):
+            details = json.dumps(details, ensure_ascii=False)
         conn = Config.get_db_connection()
         try:
             with conn.cursor() as cursor:
@@ -243,8 +254,8 @@ class ChatbotService:
             return "자가진단이 종료되었습니다. 종료 버튼을 눌러주세요."
 
     def _format_options(self, options):
-        # 옵션을 보기 좋게 문자열로 변환
-        return '\n'.join([f"- {opt['text']}" for opt in options])
+        # 옵션을 1. 없음\n2. 2-6일 ... 식으로 반환하고, 각 선택지 사이에 여러 줄의 줄바꿈을 추가
+        return '\n\n\n'.join([f"{idx+1}. {opt['text']}" for idx, opt in enumerate(options)])
 
     def chat(self, 
             message: str, 
@@ -332,7 +343,7 @@ class ChatbotService:
         try:
             with conn.cursor() as cur:
                 sql = """
-                INSERT INTO SELFDIAGNOSIS (USER_SEQ, DIAGNOSIS_DATE, TOTAL_SCORE, RISK_LEVEL, USER_TEXT)
+                INSERT INTO SELFDIAGNOSIS (USER_SEQ, DIAGNOSIS_DATE, DEPRESSION_SCORE, RISK_LEVEL, USER_TEXT)
                 VALUES (%s, %s, %s, %s, %s)
                 """
                 cur.execute(sql, (user_id, datetime.now(), total_score, risk_level, user_text))
@@ -343,6 +354,7 @@ class ChatbotService:
             conn.close()
 
     def handle_input(self, user_input, user_id=None):
+        global user_chat_buffer
         if getattr(self, 'ask_additional_survey', False):
             self.ask_additional_survey = False
             if '네' in user_input or user_input.strip().lower() in ['y', 'yes']:
@@ -374,18 +386,29 @@ class ChatbotService:
             # 상담 대화: GPT 답변 + DB 저장 + KoBERT 점수 판별 + 진단 결과 저장
             if user_id is not None:
                 self.save_message_to_db(user_id, user_input, is_from_user=True)
+                # 버퍼에 메시지 누적
+                if user_id not in user_chat_buffer:
+                    user_chat_buffer[user_id] = []
+                user_chat_buffer[user_id].append(user_input)
+                # 5개가 되면 점수 평가 및 저장
+                if len(user_chat_buffer[user_id]) >= 5:
+                    concat_text = '\n'.join(user_chat_buffer[user_id])
+                    depression_result = self.depression_model.predict(concat_text)
+                    prob = depression_result['depression_probability']
+                    risk_level = depression_result['label_name']
+                    self.save_diagnosis_result(user_id, int(prob * 100), risk_level, concat_text)
+                    user_chat_buffer[user_id] = []  # 버퍼 초기화
             depression_result = self.depression_model.predict(user_input)
             prob = depression_result['depression_probability']
             risk_level = depression_result['label_name']
-            # 진단 결과 DB 저장
-            if user_id is not None:
-                self.save_diagnosis_result(user_id, int(prob * 100), risk_level, user_input)
+            # 진단 결과 DB 저장 (기존 단일문장 저장은 제거, 위에서 5개 단위로만 저장)
             if prob >= self.crisis_threshold:
                 crisis_msg = "지금 많이 힘들어 보이네요. 위기 상황일 경우, 1393 등 전문기관에 꼭 연락해 주세요."
                 if user_id is not None:
                     self.save_message_to_db(user_id, crisis_msg, is_from_user=False)
                 return crisis_msg
-            gpt_response = self.get_gpt_response(user_input)
+            # 답변 생성 시 50자 이내로 답변하도록 프롬프트에 명시
+            gpt_response = self.get_gpt_response(user_input + " (50자 이내로 답변해 주세요.)")
             if user_id is not None:
                 self.save_message_to_db(user_id, gpt_response, is_from_user=False)
             return gpt_response
