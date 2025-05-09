@@ -140,7 +140,7 @@ h2 {
   flex-wrap: wrap;
   gap: 20px;
   margin-top: 16px;
-  justify-content: space-evenly;
+  justify-content: space-around;
 }
 .center-card {
   background: #fff;

@@ -64,8 +64,18 @@ def index():
     if 'user_id' not in session:
         flash('자가진단을 이용하려면 로그인이 필요합니다.', 'warning')
         return redirect(url_for('auth.login'))
-        
-    return render_template('diagnosis/index.html', title='mindLog - 자가진단 시작')
+
+    phq9_questions = get_assessment_questions('PHQ-9')
+    cesd_questions = get_assessment_questions('CES-D')
+    cesd10d_questions = get_assessment_questions('CESD-10-D')
+
+    return render_template(
+        'diagnosis/index.html',
+        title='mindLog - 자가진단 시작',
+        phq9_questions=phq9_questions,
+        cesd_questions=cesd_questions,
+        cesd10d_questions=cesd10d_questions
+    )
 
 @diagnosis_bp.route('/info')
 def info():
@@ -80,12 +90,13 @@ def phq9():
         return redirect(url_for('auth.login'))
         
     if request.method == 'POST':
-        # 사용자 응답 처리
+        # JSON 데이터 받기
+        data = request.get_json()
         responses = []
         total_score = 0
         
         for i in range(1, 10):  # PHQ-9는 9개 문항
-            answer = int(request.form.get(f'q{i}', 0))
+            answer = int(data.get(f'q{i}', 0))
             responses.append(answer)
             total_score += answer
         
@@ -101,16 +112,11 @@ def phq9():
             result['description'] = '가벼운 우울 증상이 있습니다.'
             result['recommendation'] = '자가 관리와 정기적인 기분 체크를 권장합니다.'
             result['risk_level'] = 'low'
-        elif total_score <= 14:
+        elif total_score <= 19:
             result['severity'] = '중간 정도의 우울증'
             result['description'] = '중간 정도의 우울 증상이 있습니다.'
             result['recommendation'] = '전문가와 상담을 고려해보세요.'
             result['risk_level'] = 'medium'
-        elif total_score <= 19:
-            result['severity'] = '심한 우울증'
-            result['description'] = '심한 우울 증상이 있습니다.'
-            result['recommendation'] = '전문가의 도움을 받는 것이 좋습니다.'
-            result['risk_level'] = 'high'
         else:
             result['severity'] = '심각한 우울증'
             result['description'] = '심각한 우울 증상이 있습니다.'
@@ -122,14 +128,13 @@ def phq9():
             result['warning'] = '자살 생각이 있는 것으로 보입니다. 즉시 전문가의 도움을 받으세요.'
             result['risk_level'] = 'high'
         
-        # 결과 저장 (로그인한 경우만)
+        # 결과 저장 (ASSESSMENT_HISTORY)
         if 'user_id' in session:
-            save_diagnosis_result(
-                session['user_id'], 
-                'PHQ-9', 
-                total_score, 
-                responses, 
-                result
+            save_assessment_history(
+                user_seq=session['user_id'],
+                assessment_type='PHQ-9',
+                score=total_score,
+                data=responses
             )
         
         # 세션에 결과 저장 (결과 페이지에서 사용)
@@ -141,7 +146,20 @@ def phq9():
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        return redirect(url_for('diagnosis.result'))
+        # 위험도 한글 표기
+        severity_map = {
+            '정상': '정상',
+            '가벼운 우울증': '경도 우울',
+            '중간 정도의 우울증': '중간 정도의 우울',
+            '심각한 우울증': '심한 우울'
+        }
+        severity_label = severity_map.get(result['severity'], result['severity'])
+        return jsonify({
+            'success': True,
+            'score': total_score,
+            'severity': severity_label,
+            'recommendation': result['recommendation']
+        })
     
     # GET 요청 처리 (설문지 표시)
     return render_template('diagnosis/phq9.html', 
@@ -156,16 +174,16 @@ def cesd():
         return redirect(url_for('auth.login'))
         
     if request.method == 'POST':
-        # 사용자 응답 처리
+        # JSON 데이터 받기
+        data = request.get_json()
         responses = []
         total_score = 0
         
         for i in range(1, 21):  # CES-D는 20개 문항
-            answer = int(request.form.get(f'q{i}', 0))
+            answer = int(data.get(f'q{i}', 0))
             # 4, 8, 12, 16번 문항은 긍정 문항으로 역채점
             if i in [4, 8, 12, 16]:
                 answer = 3 - answer  # 역채점 (0→3, 1→2, 2→1, 3→0)
-            
             responses.append(answer)
             total_score += answer
         
@@ -192,14 +210,13 @@ def cesd():
             result['recommendation'] = '전문가의 도움을 받는 것이 좋습니다.'
             result['risk_level'] = 'high'
         
-        # 결과 저장 (로그인한 경우만)
+        # 결과 저장 (ASSESSMENT_HISTORY)
         if 'user_id' in session:
-            save_diagnosis_result(
-                session['user_id'], 
-                'CES-D', 
-                total_score, 
-                responses, 
-                result
+            save_assessment_history(
+                user_seq=session['user_id'],
+                assessment_type='CES-D',
+                score=total_score,
+                data=responses
             )
         
         # 세션에 결과 저장 (결과 페이지에서 사용)
@@ -211,7 +228,20 @@ def cesd():
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        return redirect(url_for('diagnosis.result'))
+        # 위험도 한글 표기
+        severity_map = {
+            '정상': '정상',
+            '경도 우울증': '경도 우울',
+            '중등도 우울증': '중간 정도의 우울',
+            '중증 우울증': '심한 우울'
+        }
+        severity_label = severity_map.get(result['severity'], result['severity'])
+        return jsonify({
+            'success': True,
+            'score': total_score,
+            'severity': severity_label,
+            'recommendation': result['recommendation']
+        })
     
     # GET 요청 처리 (설문지 표시)
     return render_template('diagnosis/cesd.html', 
@@ -226,34 +256,29 @@ def cesd10():
         return redirect(url_for('auth.login'))
         
     if request.method == 'POST':
-        # 사용자 응답 처리
+        # JSON 데이터 받기
+        data = request.get_json()
         responses = []
         total_score = 0
         
         for i in range(1, 11):  # CES-D-10은 10개 문항
-            answer = int(request.form.get(f'q{i}', 0))
+            answer = int(data.get(f'q{i}', 0))
             # 1, 6, 8번 문항은 긍정 문항으로 역채점
             if i in [1, 6, 8]:
                 answer = 1 - answer  # 역채점 (0→1, 1→0) - 이진 응답이므로
-            
             responses.append(answer)
             total_score += answer
         
         # 결과 해석
         result = {}
-        if total_score < 4:
+        if total_score < 2:
             result['severity'] = '정상'
             result['description'] = '우울증이 없는 상태입니다.'
             result['recommendation'] = '현재 상태를 유지하세요.'
             result['risk_level'] = 'low'
-        elif total_score < 7:
-            result['severity'] = '경도 우울증'
-            result['description'] = '가벼운 우울 증상이 있습니다.'
-            result['recommendation'] = '자가 관리와 정기적인 기분 체크를 권장합니다.'
-            result['risk_level'] = 'low'
         elif total_score < 10:
-            result['severity'] = '중등도 우울증'
-            result['description'] = '중간 정도의 우울 증상이 있습니다.'
+            result['severity'] = '우울증'
+            result['description'] = '유의미한 수준의 우울 증상이 있습니다.'
             result['recommendation'] = '전문가와 상담을 고려해보세요.'
             result['risk_level'] = 'medium'
         else:
@@ -262,14 +287,13 @@ def cesd10():
             result['recommendation'] = '전문가의 도움을 받는 것이 좋습니다.'
             result['risk_level'] = 'high'
         
-        # 결과 저장 (로그인한 경우만)
+        # 결과 저장 (ASSESSMENT_HISTORY)
         if 'user_id' in session:
-            save_diagnosis_result(
-                session['user_id'], 
-                'CESD-10-D', 
-                total_score, 
-                responses, 
-                result
+            save_assessment_history(
+                user_seq=session['user_id'],
+                assessment_type='CESD-10-D',
+                score=total_score,
+                data=responses
             )
         
         # 세션에 결과 저장 (결과 페이지에서 사용)
@@ -281,7 +305,19 @@ def cesd10():
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
-        return redirect(url_for('diagnosis.result'))
+        # 위험도 한글 표기
+        severity_map = {
+            '정상': '정상',
+            '우울증': '중간 정도의 우울',
+            '중증 우울증': '심한 우울'
+        }
+        severity_label = severity_map.get(result['severity'], result['severity'])
+        return jsonify({
+            'success': True,
+            'score': total_score,
+            'severity': severity_label,
+            'recommendation': result['recommendation']
+        })
     
     # GET 요청 처리 (설문지 표시)
     return render_template('diagnosis/cesd10.html', 
@@ -464,3 +500,107 @@ def get_recommendation(risk_level):
         return "중간 정도의 우울 증상이 있습니다. 전문가와 상담을 고려해보세요. 규칙적인 운동과 충분한 수면이 도움이 될 수 있습니다."
     else:
         return "경미한 우울 증상이 있거나 정상 범위입니다. 규칙적인 생활과 스트레스 관리를 통해 현재 상태를 유지하세요."
+
+def get_assessment_questions(assessment_type):
+    conn = pymysql.connect(
+        host=Config.DB_HOST,
+        port=Config.DB_PORT,
+        user=Config.DB_USER,
+        password=Config.DB_PASSWORD,
+        db=Config.DB_NAME,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        with conn.cursor() as cursor:
+            sql = """
+                SELECT QUESTION_NUMBER, QUESTION_TEXT, RESPONSE_OPTIONS
+                FROM ASSESSMENT_QUESTIONS
+                WHERE ASSESSMENT_TYPE = %s
+                ORDER BY QUESTION_NUMBER ASC
+            """
+            cursor.execute(sql, (assessment_type,))
+            result = cursor.fetchall()
+            questions = [
+                {
+                    'number': row['QUESTION_NUMBER'],
+                    'text': row['QUESTION_TEXT'],
+                    'options': json.loads(row['RESPONSE_OPTIONS'])
+                }
+                for row in result
+            ]
+            return questions
+    finally:
+        conn.close()
+
+def get_db_connection():
+    """데이터베이스 연결을 생성하고 반환합니다."""
+    return pymysql.connect(
+        host=Config.DB_HOST,
+        port=Config.DB_PORT,
+        user=Config.DB_USER,
+        password=Config.DB_PASSWORD,
+        db=Config.DB_NAME,
+        charset='utf8mb4'
+    )
+
+def save_assessment_history(user_seq, assessment_type, score, data):
+    """설문 결과를 ASSESSMENT_HISTORY 테이블에 저장합니다."""
+    conn = None
+    cursor = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 현재 날짜와 시간을 가져옵니다
+        assessment_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 위험도 판단
+        risk_level = "정상"
+        if assessment_type == "PHQ-9":
+            if score >= 20:
+                risk_level = "심각"
+            elif score >= 15:
+                risk_level = "중등도"
+            elif score >= 10:
+                risk_level = "경도"
+        elif assessment_type == "CES-D":
+            if score >= 24:
+                risk_level = "심각"
+            elif score >= 16:
+                risk_level = "중등도"
+            elif score >= 8:
+                risk_level = "경도"
+        elif assessment_type == "CESD-10-D":
+            if score >= 20:
+                risk_level = "심각"
+            elif score >= 14:
+                risk_level = "중등도"
+            elif score >= 7:
+                risk_level = "경도"
+        
+        # 데이터를 JSON 형식으로 변환
+        details = json.dumps(data, ensure_ascii=False)
+        
+        # SQL 쿼리 실행
+        sql = """
+            INSERT INTO ASSESSMENT_HISTORY 
+            (USER_SEQ, ASSESSMENT_TYPE, ASSESSMENT_DATE, SCORE, DETAILS, RISK_LEVEL)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(sql, (user_seq, assessment_type, assessment_date, score, details, risk_level))
+        
+        conn.commit()
+        print(f"Assessment history saved successfully: {assessment_type}, Score: {score}, Risk Level: {risk_level}")
+        print(f"Details: {details}")
+        
+    except Exception as e:
+        print(f"Error saving assessment history: {str(e)}")
+        if conn:
+            conn.rollback()
+        raise e
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

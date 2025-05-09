@@ -32,29 +32,26 @@
   align-items: center;
 }
 
-.menu-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-}
-.menu-toggle span {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background-color: #333;
-  margin: 5px 0;
-  transition: all 0.3s ease;
-}
 .notification-toggle {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 8px;
 }
 .notification-icon {
   width: 24px;
   height: 24px;
+}
+
+.logout-btn {
+  text-decoration: none;
+  border: 1.5px solid #80bf9b;
+  padding: 8px 10px;
+  border-radius: 12px;
+  color: white;
+  background-color: #80bf9b;
+  width: 50px;
+  font-size: 10px;
+  text-align: center;
 }
 
 @media (min-width: 768px) {

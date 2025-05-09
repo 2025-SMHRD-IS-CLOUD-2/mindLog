@@ -16,14 +16,9 @@
           class="notification-icon"
         />
       </button>
-      <button class="menu-toggle" id="menuToggle">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      {% if session.user_id %}
+      <a href="{{ url_for('auth.logout') }}" class="logout-btn">로그아웃</a>
+      {% endif %}
     </div>
-    {% if session.user_id %}
-    <a href="{{ url_for('auth.logout') }}" class="logout-btn">로그아웃</a>
-    {% endif %}
   </div>
 </header>
