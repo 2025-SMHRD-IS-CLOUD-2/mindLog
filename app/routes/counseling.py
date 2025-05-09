@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, session, jsonify, flash, redirect, url_for
 import pymysql
 from datetime import datetime,timedelta
+
+import pymysql.cursors
 from config import Config
 
 counseling_bp = Blueprint('counseling', __name__)
@@ -16,45 +18,47 @@ def get_db_connection():
         charset='utf8mb4'
     )
     return conn
-
-@counseling_bp.route('/api/counseling_centers')
-def get_counseling_centers():
-    conn = get_db_connection()
-    try:
-        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            cursor.execute('SELECT CENTER_SEQ, NAME, LATITUDE, LONGITUDE, ADDRESS, CONTACT FROM COUNSELINGCENTERS')
-            centers = cursor.fetchall()  # 실제 데이터 fetch
-            print(centers)
-    finally:
-        conn.close()
-    return jsonify(centers)
-
 @counseling_bp.route('/schedule')
 def schedule():
     conn = get_db_connection()
-    cursor = conn.cursor(pymysql.cursors.DictCursor)
-    session
-    sql = f"""SELECT * 
-    FROM APPOINTMENTS 
-    WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST1')""" #{session.get('id')}
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    conn.close();
-    return render_template('counseling/schedule.html',result = result)
-
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            today = datetime.now()
+            sql = today.strftime("""SELECT *
+            FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
+            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            AND A.CENTER_SEQ = C.CENTER_SEQ
+            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
+            print(sql)
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            print(result)
+            conn.close()
+        return render_template('counseling/schedule.html',result = result,today = today)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 @counseling_bp.route('/get_schedule',methods = ['POST'])
 def get_data():
+    date = request.get_json()
+    year = date.get("year")
+    month = date.get("month")
+    day = date.get("day")
+    sc = datetime(int(year),int(month),int(day))
     try:
         conn = get_db_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = "SELECT * FROM APPOINTMENTS WHERE USER_SEQ = 1"
+            sql = sc.strftime("""SELECT *
+            FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
+            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            AND A.CENTER_SEQ = C.CENTER_SEQ
+            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
-            result = cursor.fetchall()  # [{'id': 1, 'name': 'Alice'}, ...]
+            result = cursor.fetchall()
+            conn.close()
             for row in result:
                 for key, value in row.items():
                     if isinstance(value, timedelta):
                         row[key] = str(value)
-            print(result)
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -137,9 +141,8 @@ def search():
                           keyword=keyword, 
                           region=region)
 
-@counseling_bp.route('/center_detail')
-@counseling_bp.route('/center_detail/<int:center_id>')
-def center_detail(center_id=None):
+@counseling_bp.route('/center/<int:center_id>')
+def center_detail(center_id):
     # 로그인 상태 확인
     if 'user_id' not in session:
         flash('상담센터 정보 확인을 위해 로그인이 필요합니다.', 'error')
@@ -149,56 +152,59 @@ def center_detail(center_id=None):
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            if center_id:
-                sql = "SELECT * FROM COUNSELINGCENTERS WHERE CENTER_SEQ = %s"
-                cursor.execute(sql, (center_id,))
-                center = cursor.fetchone()
-                
-                if not center:
-                    flash('존재하지 않는 상담센터입니다.', 'error')
-                    return redirect(url_for('counseling.centers'))
-            else:
-                sql = "SELECT * FROM COUNSELINGCENTERS"
-                cursor.execute(sql)
-                center = cursor.fetchall()
+            sql = "SELECT * FROM COUNSELINGCENTERS WHERE CENTER_SEQ = %s"
+            cursor.execute(sql, (center_id,))
+            center = cursor.fetchone()
+            
+            if not center:
+                flash('존재하지 않는 상담센터입니다.', 'error')
+                return redirect(url_for('counseling.centers'))
     finally:
         conn.close()
     
     return render_template('counseling/center_detail.html', center=center)
 
-@counseling_bp.route('/appointment', methods=['GET', 'POST'])
+@counseling_bp.route('/appointment', methods = ['GET', 'POST'])
 def appointment():
-    if request.method == 'POST':
-        try:
-            data = request.get_json()
-            
-            # 예약 정보 저장
-            conn = get_db_connection()
-            with conn.cursor() as cursor:
-                sql = """INSERT INTO APPOINTMENTS 
-                        (USER_SEQ, CENTER_SEQ, APPOINTMENT_DATE, APPOINTMENT_TIME, CONTENT, STATUS) 
-                        VALUES (%s, %s, %s, %s, %s, %s)"""
-                cursor.execute(sql, (
-                    session['user_seq'],
-                    data['centerIndex'],
-                    data['date'],
-                    data['time'],
-                    data['content'],
-                    'pending'
-                ))
-                conn.commit()
-            
-            return jsonify({'success': True})
-        except Exception as e:
-            return jsonify({'success': False, 'message': str(e)})
+    # 로그인 상태 확인
+    if 'user_id' not in session:
+        flash('상담 예약을 위해 로그인이 필요합니다.', 'error')
+        return redirect(url_for('auth.login'))
     
-    # GET 요청 처리
-    today = datetime.now().strftime('%Y-%m-%d')
-    max_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
-    
-    return render_template('counseling/appointment.html', 
-                         today=today,
-                         max_date=max_date)
+    # 상담센터 정보 조회
+    center = request.get_json()
+    name = center.get("name")
+    address = center.get("address")
+    contact = center.get("contact")
+    conn = get_db_connection()
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = f"""SELECT * FROM COUNSELINGCENTERS WHERE NAME = '{name}'
+            AND ADDRESS = '{address}' AND contact = '{contact}'"""
+            cursor.execute(sql)
+            center = cursor.fetchone()
+            if not center:
+                flash('존재하지 않는 상담센터입니다.', 'error')
+                return redirect(url_for('counseling.centers'))
+    finally:
+        conn.close()
+    return render_template('counseling/appointment.html', center = center)
+
+@counseling_bp.route("getTime",methods = ["POST"])
+def getTime():
+    centerInfo = request.get_json()
+    selectDay = centerInfo.get("selectDay")
+    centerSeq = int(centerInfo.get("center_seq"))
+    conn = get_db_connection()
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            sql = f""" SELECT APPOINTMENT_TIME FROM APPOINTMENTS WHERE APPOINTMENT_DATE = '{selectDay}' 
+            AND CENTER_SEQ =  {centerSeq}"""
+            cursor.execute(sql)
+            time = cursor.fetchall()
+    finally:
+        conn.close()
+    return jsonify(time)
 
 @counseling_bp.route('/my-appointments')
 def my_appointments():
@@ -317,3 +323,15 @@ def cancel_appointment(appointment_id):
         conn.close()
     
     return redirect(url_for('counseling.my_appointments'))
+
+@counseling_bp.route('/api/counseling_centers')
+def get_counseling_centers():
+    conn = get_db_connection()
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute('SELECT CENTER_SEQ, NAME, LATITUDE, LONGITUDE, ADDRESS, CONTACT FROM COUNSELINGCENTERS')
+            centers = cursor.fetchall()  # 실제 데이터 fetch
+            print(centers)
+    finally:
+        conn.close()
+    return jsonify(centers)
