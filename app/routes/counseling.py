@@ -197,7 +197,7 @@ def appointment():
 
     finally:
         conn.close()
-    return render_template('counseling/appointment.html', center = center,appointment = appointment)
+    return render_template('counseling/appointment.html', center = center,appointment = appointment,today = today)
 
 @counseling_bp.route("get_time",methods = ["POST"])
 def getTime():
@@ -218,8 +218,7 @@ def getTime():
             for row in result:
                 for key, value in row.items():
                     if isinstance(value, timedelta):
-                        row[key] = str(value).replace(":00:00","")
-                        
+                        row[key] = str(value).replace(":00:00","")           
     finally:
         conn.close()
     return jsonify(result)

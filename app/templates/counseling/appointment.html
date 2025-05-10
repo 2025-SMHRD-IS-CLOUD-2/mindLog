@@ -7,39 +7,46 @@
     <link rel="stylesheet" href="../../static/css/appointment.css">
 </head>
 <body>
-    <form action="http://127.0.0.1:5000/counseling/insert_appointment">
-        <section id = 'centerInfo'>
-            <h3>{{center.NAME}}</h3>
-            <span>{{center.ADDRESS}}</span>
-            <span>{{center.CONTACT}}</span>
-        </section>
-        <section>
-            <input type="date" id = "selectDate" name="date" value = {{appointment.APPOINTMENT_DATE}}>
-            <div id = "availableTime">
-                {% if not appointment%}
-                    {% for i in range(9,19)%}
-                        <label>
-                            <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
-                        </label>
-                    {% endfor%}
-                {% else%}
-                    {% for i in range(9,19)%}
-                        {% for item in appointment %}
-                            {%if i == 12 or i == 13 %}
-                                {%continue%}
-                            {% elif i == item.APPOINTMENT_TIME|int%}
+    <form action="http://127.0.0.1:5000/counseling/insert_appointment" method = "post">
+
+            <section id = 'centerInfo'>
+                <h3>{{center.NAME}}</h3>
+                <span>{{center.ADDRESS}}</span>
+                <br>
+                <span>{{center.CONTACT}}</span>
+            </section>
+            <section>
+                <input type="date" id = "selectDate" name="date" value = {{today}}>
+                <div id = "availableTime">
+                    {% if not appointment%}
+                        {% for i in range(9,19)%}
                             <label>
-                            <input type = "radio" name = "appointmenttime" value = {{item.APPOINTMENT_TIME}}:00:00 disabled>{{item.APPOINTMENT_TIME}}시
+                                <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
                             </label>
-                            {% break %}
-                            {% endif%}
+                        {% endfor%}
+                    {% else%}
+                    {% for i in range(9,19)%}
+                            {% for item in appointment %}
+                                {%if i == 12 or i == 13 %}
+                                    {%continue%}
+                                {% elif i == item.APPOINTMENT_TIME|int%}
+                                <label>
+                                <input type = "radio" name = "appointmenttime" value = {{item.APPOINTMENT_TIME}}:00:00 disabled>{{item.APPOINTMENT_TIME}}시
+                                </label>
+                                {% break %}
+                                {% elif loop.index == appointment|length%}
+                                    <label>
+                                        <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
+                                    </label>
+                                {% endif%}
+                            {% endfor %}
                         {% endfor %}
-                    {% endfor %}
-                {% endif %}
-            </div>
-        </section>
-        <input type="submit" value= "예약하기">
-    </form>
+                    {% endif %}
+                </div>
+            </section>
+            <input type="submit" value= "예약하기">
+        </form>
+    
     <script>
         let selectDate = document.getElementById("selectDate");
         let availableTime = document.getElementById("availableTime");
@@ -82,7 +89,7 @@
                 console.error('에러 발생:', error);
             });
         })
-
     </script>
+    <script src = "../../static/js/appointment.js"></script>
 </body>
 </html>

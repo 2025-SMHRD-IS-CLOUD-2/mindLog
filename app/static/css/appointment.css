@@ -1,16 +1,64 @@
 body{
     max-width: 768px;
 }
-
-label{
-    display: inline-block;
-    max-width: 150px;
-    width: calc(75%/3);
-    border: 3px solid #0a8d48;
-    border-radius: 15px;
+#availableTime{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
-
+form{
+    display: flex ;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 40px;
+}
+h3{
+    color: #0a8d48;
+    margin-top: 0px;
+}
+section{
+    margin: 5%;
+    padding: 10%;
+    width:auto;
+    margin-top:30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 1px #0a8d48;
+}
+label{
+    margin:5%;
+    display: inline-block;
+    height: 50px;
+    width: calc(70%/3);
+    box-shadow: 0 0 0 3px #0a8d48 inset;
+    color: #0a8d48;
+    text-align: center;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+label:has(input[type = "radio"]:disabled){
+    box-shadow: 0 0 0 3px #858585 inset;
+    color: #858585;
+}
+label:has([type = 'radio']:checked){
+    background-color: rgb(175, 255, 175);
+    color: white;
+}
 input[type = "radio"]{
     appearance: none;
     
+}
+input[type = "radio"]:disabled{
+    appearance: none;
+    
+}
+[type = 'submit']{
+    position: fixed;
+    bottom: 0px;
+    align-self: center;
+    width: 90%;
+    color: white;
+    background-color: #0a8d48;
+    border-radius: 10px;
+    height: 40px;
 }
