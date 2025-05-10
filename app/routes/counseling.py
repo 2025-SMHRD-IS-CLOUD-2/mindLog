@@ -175,36 +175,51 @@ def appointment():
     name = request.args.get("name")
     address = request.args.get("address")
     phone = request.args.get("phone")
-    
+    today = datetime.now()
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = f"""SELECT * FROM COUNSELINGCENTERS WHERE NAME = '{name}'
-            AND ADDRESS = '{address}' AND contact = '{phone}'"""
+            sql = today.strftime(f"""
+            SELECT C.CENTER_SEQ,NAME,ADDRESS,CONTACT,APPOINTMENT_TIME,APPOINTMENT_DATE
+            FROM COUNSELINGCENTERS AS C INNER JOIN APPOINTMENTS AS A
+            ON A.CENTER_SEQ = C.CENTER_SEQ
+            WHERE A.CENTER_SEQ = (SELECT CENTER_SEQ FROM COUNSELINGCENTERS WHERE NAME = '{name}' AND ADDRESS = '{address}' AND contact = '{phone}')
+            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
-            center = cursor.fetchone()
-            if not center:
-                flash('존재하지 않는 상담센터입니다.', 'error')
-                return redirect(url_for('counseling.centers'))
+            center = cursor.fetchall()
+            for row in center:
+                for key, value in row.items():
+                    if isinstance(value, timedelta):
+                        row[key] = int(str(value).replace(":00:00",""))
+
     finally:
         conn.close()
     return render_template('counseling/appointment.html', center = center)
 
-@counseling_bp.route("getTime",methods = ["POST"])
+@counseling_bp.route("get_time",methods = ["POST"])
 def getTime():
     centerInfo = request.get_json()
-    selectDay = centerInfo.get("selectDay")
-    centerSeq = int(centerInfo.get("center_seq"))
+    selectDay = centerInfo.get("select_day")
+    centerSeq = centerInfo.get("center_seq")
+    print(centerSeq)
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = f""" SELECT APPOINTMENT_TIME FROM APPOINTMENTS WHERE APPOINTMENT_DATE = '{selectDay}' 
-            AND CENTER_SEQ =  {centerSeq}"""
+            sql = f""" SELECT APPOINTMENT_TIME 
+            FROM APPOINTMENTS 
+            WHERE APPOINTMENT_DATE = '{selectDay}' 
+            AND CENTER_SEQ =  {centerSeq}
+            ORDER BY APPOINTMENT_TIME ASC"""
             cursor.execute(sql)
-            time = cursor.fetchall()
+            result = cursor.fetchall()
+            for row in result:
+                for key, value in row.items():
+                    if isinstance(value, timedelta):
+                        row[key] = str(value).replace(":00:00","")
+                        
     finally:
         conn.close()
-    return jsonify(time)
+    return jsonify(result)
 
 @counseling_bp.route('/my-appointments')
 def my_appointments():
@@ -334,3 +349,7 @@ def get_counseling_centers():
     finally:
         conn.close()
     return jsonify(centers)
+
+@counseling_bp.route('/insert_appointment')
+def insert_appointment():
+    return

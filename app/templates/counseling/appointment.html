@@ -4,16 +4,85 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="../../static/css/appointment.css">
 </head>
 <body>
-    <section id = 'centerInfo'>
-        <h3>{{center.NAME}}</h3>
-        <span>{{center.ADDRESS}}</span>
-        <span>{{center.CONTACT}}</span>
-    </section>
-    <section>
-        <input type="date" id = "selectDate">
-    </section>
-    <script src = "../../static/js/appointment.js"></script>
+    <form action="http://127.0.0.1:5000/counseling/insert_appointment">
+        <section id = 'centerInfo'>
+            <h3>{{center[0].NAME}}</h3>
+            <span>{{center[0].ADDRESS}}</span>
+            <span>{{center[0].CONTACT}}</span>
+        </section>
+        <section>
+            <input type="date" id = "selectDate" name="date" value = {{center[0].APPOINTMENT_DATE}}>
+            <div id = "availableTime">
+                {% if not center%}
+                    {% for i in range(9,19)%}
+                        <label>
+                            <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
+                        </label>
+                    {% endfor%}
+                {% else%}
+                    {% for i in range(9,19)%}
+                        {% for item in center %}
+                            {%if i == 12 or i == 13 %}
+                                {%continue%}
+                            {% elif i == item.APPOINTMENT_TIME|int%}
+                            <label>
+                            <input type = "radio" name = "appointmenttime" value = {{item.APPOINTMENT_TIME}}:00:00 disabled>{{item.APPOINTMENT_TIME}}시
+                            </label>
+                            {% break %}
+                            {% endif%}
+                        {% endfor %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </section>
+        <input type="submit" value= "예약하기">
+    </form>
+    <script>
+        let selectDate = document.getElementById("selectDate");
+        let availableTime = document.getElementById("availableTime");
+        selectDate.addEventListener("change",async() => {
+            availableTime.innerHTML = "";
+        console.log(selectDate.value);
+        await fetch("http://127.0.0.1:5000/counseling/get_time",{
+        method: 'POST',
+            body: JSON.stringify({ "select_day":selectDate.value, "center_seq": parseInt("{{center[0].CENTER_SEQ}}")}),
+            headers: {
+            'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log(data)
+            for(let i = 9; i <= 18; i++){
+                if( i == 12 || i == 13)continue;
+                if(data.length == 0){
+                    let time = document.createElement("label");
+                        time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
+                        availableTime.appendChild(time);
+                }else{
+                    for(let j = 0; j < data.length; j++ ){
+                        if(i == data[j]["APPOINTMENT_TIME"]){
+                            let time = document.createElement("label");
+                            time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00" disabled>${i}시`;
+                            availableTime.appendChild(time);
+                            break;
+                        }else if(j == data.length-1){
+                            let time = document.createElement("label");
+                            time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
+                            availableTime.appendChild(time);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+                console.error('에러 발생:', error);
+            });
+        })
+
+    </script>
 </body>
 </html>

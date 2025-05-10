@@ -15,7 +15,9 @@ def create_app():
     
     # 설정 로드
     app.config.from_object(Config)
-    
+    #jinja loop컨트롤러 break나 continue 사용가능
+    app.jinja_env.add_extension('jinja2.ext.loopcontrols')
+
     # 세션 설정 (Config에서 가져옴)
     Session(app)
     

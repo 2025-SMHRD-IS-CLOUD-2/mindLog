@@ -1,0 +1,16 @@
+body{
+    max-width: 768px;
+}
+
+label{
+    display: inline-block;
+    max-width: 150px;
+    width: calc(75%/3);
+    border: 3px solid #0a8d48;
+    border-radius: 15px;
+}
+
+input[type = "radio"]{
+    appearance: none;
+    
+}
