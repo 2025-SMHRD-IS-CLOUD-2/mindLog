@@ -164,7 +164,7 @@ def center_detail(center_id):
     
     return render_template('counseling/center_detail.html', center=center)
 
-@counseling_bp.route('/appointment', methods = ['GET', 'POST'])
+@counseling_bp.route('/appointment', methods = ['GET'])
 def appointment():
     # 로그인 상태 확인
     if 'user_id' not in session:
@@ -172,15 +172,15 @@ def appointment():
         return redirect(url_for('auth.login'))
     
     # 상담센터 정보 조회
-    center = request.get_json()
-    name = center.get("name")
-    address = center.get("address")
-    contact = center.get("contact")
+    name = request.args.get("name")
+    address = request.args.get("address")
+    phone = request.args.get("phone")
+    
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             sql = f"""SELECT * FROM COUNSELINGCENTERS WHERE NAME = '{name}'
-            AND ADDRESS = '{address}' AND contact = '{contact}'"""
+            AND ADDRESS = '{address}' AND contact = '{phone}'"""
             cursor.execute(sql)
             center = cursor.fetchone()
             if not center:
@@ -331,7 +331,6 @@ def get_counseling_centers():
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute('SELECT CENTER_SEQ, NAME, LATITUDE, LONGITUDE, ADDRESS, CONTACT FROM COUNSELINGCENTERS')
             centers = cursor.fetchall()  # 실제 데이터 fetch
-            print(centers)
     finally:
         conn.close()
     return jsonify(centers)
