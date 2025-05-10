@@ -177,24 +177,27 @@ def appointment():
     phone = request.args.get("phone")
     today = datetime.now()
     conn = get_db_connection()
+    today = today.strftime("%Y-%m-%d")
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = today.strftime(f"""
-            SELECT C.CENTER_SEQ,NAME,ADDRESS,CONTACT,APPOINTMENT_TIME,APPOINTMENT_DATE
-            FROM COUNSELINGCENTERS AS C INNER JOIN APPOINTMENTS AS A
-            ON A.CENTER_SEQ = C.CENTER_SEQ
-            WHERE A.CENTER_SEQ = (SELECT CENTER_SEQ FROM COUNSELINGCENTERS WHERE NAME = '{name}' AND ADDRESS = '{address}' AND contact = '{phone}')
-            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
+            sql = f"SELECT CENTER_SEQ,NAME,ADDRESS,CONTACT FROM COUNSELINGCENTERS WHERE NAME = '{name}' AND ADDRESS = '{address}' AND contact = '{phone}'"
             cursor.execute(sql)
-            center = cursor.fetchall()
-            for row in center:
+            center = cursor.fetchone()
+            sql = f"""
+            SELECT APPOINTMENT_TIME
+            FROM APPOINTMENTS
+            WHERE CENTER_SEQ = (SELECT CENTER_SEQ FROM COUNSELINGCENTERS WHERE NAME = '{name}' AND ADDRESS = '{address}' AND contact = '{phone}')
+            AND APPOINTMENT_DATE = '{today}'"""
+            cursor.execute(sql)
+            appointment = cursor.fetchall()
+            for row in appointment:
                 for key, value in row.items():
                     if isinstance(value, timedelta):
                         row[key] = int(str(value).replace(":00:00",""))
 
     finally:
         conn.close()
-    return render_template('counseling/appointment.html', center = center)
+    return render_template('counseling/appointment.html', center = center,appointment = appointment)
 
 @counseling_bp.route("get_time",methods = ["POST"])
 def getTime():
