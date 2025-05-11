@@ -24,7 +24,8 @@ def schedule():
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             today = datetime.now()
-            sql = today.strftime(f"""SELECT *
+            sql = today.strftime(f"""SELECT C.CENTER_SEQ,NAME,ADDRESS,CONTACT,APPOINTMENT_SEQ,
+            APPOINTMENT_DATE,APPOINTMENT_TIME
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
             WHERE USER_SEQ =  '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
@@ -32,6 +33,10 @@ def schedule():
             cursor.execute(sql)
             result = cursor.fetchall()
             conn.close()
+            for row in result:
+                for key, value in row.items():
+                    if isinstance(value, timedelta):
+                        row[key] = str(value)
         return render_template('counseling/schedule.html',result = result,today = today)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -45,9 +50,10 @@ def get_data():
     try:
         conn = get_db_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = sc.strftime(f"""SELECT *
+            sql = sc.strftime(f"""SELECT C.CENTER_SEQ,NAME,ADDRESS,CONTACT,APPOINTMENT_SEQ,
+            APPOINTMENT_DATE,APPOINTMENT_TIME
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
-            WHERE USER_SEQ = '{session["user_id"]}'
+            WHERE USER_SEQ =  '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
             AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
@@ -306,7 +312,7 @@ def update_appointment(appointment_id):
                           appointment=appointment,
                           center=center)
 
-@counseling_bp.route('/cancel-appointment/<int:appointment_id>', methods=['POST'])
+@counseling_bp.route('/cancel-appointment/<int:appointment_id>', methods=['GET'])
 def cancel_appointment(appointment_id):
     # 로그인 상태 확인
     if 'user_id' not in session:
@@ -317,13 +323,6 @@ def cancel_appointment(appointment_id):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # 사용자의 예약인지 확인
-            sql = """SELECT COUNT(*) FROM APPOINTMENTS 
-                    WHERE APPOINTMENT_SEQ = %s AND USER_SEQ = %s"""
-            cursor.execute(sql, (appointment_id, session['user_seq']))
-            if cursor.fetchone()[0] == 0:
-                flash('존재하지 않는 예약이거나 권한이 없습니다.', 'error')
-                return redirect(url_for('counseling.my_appointments'))
             
             # 예약 삭제
             sql = "DELETE FROM APPOINTMENTS WHERE APPOINTMENT_SEQ = %s AND USER_SEQ = %s"
@@ -337,7 +336,7 @@ def cancel_appointment(appointment_id):
     finally:
         conn.close()
     
-    return redirect(url_for('counseling.my_appointments'))
+    return redirect(url_for('counseling.schedule'))
 
 @counseling_bp.route('/api/counseling_centers')
 def get_counseling_centers():
