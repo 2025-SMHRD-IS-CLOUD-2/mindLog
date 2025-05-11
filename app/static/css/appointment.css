@@ -52,10 +52,11 @@ input[type = "radio"]:disabled{
     appearance: none;
     
 }
-[type = 'submit']{
+button{
     position: fixed;
     bottom: 0px;
     align-self: center;
+    border: 1px solid #0a8d48;
     width: 90%;
     color: white;
     background-color: #0a8d48;

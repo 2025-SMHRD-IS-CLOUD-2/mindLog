@@ -352,6 +352,37 @@ def get_counseling_centers():
         conn.close()
     return jsonify(centers)
 
-@counseling_bp.route('/insert_appointment')
+@counseling_bp.route('/insert_appointment',methods = ["POST"])
 def insert_appointment():
-    return
+    conn = get_db_connection()
+    data = request.get_json()
+    date = str(data["date"])
+    time = str(data["time"])
+    center = int(data["centerSeq"])
+    print(session)
+    print(date,time,center,session["user_id"])
+    try:
+        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
+            cursor.execute(f"""
+        INSERT INTO APPOINTMENTS(USER_SEQ,CENTER_SEQ,
+                        APPOINTMENT_DATE,APPOINTMENT_TIME,
+                        STATUS) VALUES({session["user_id"]},{center},'{date}','{time}','confirmed')
+        """)
+            conn.commit()
+    except Exception as e:
+        conn.rollback()
+        flash(f'예약 중 오류가 발생했습니다: {str(e)}', 'error')
+
+    finally:
+        conn.close()
+        return jsonify({"url":url_for("counseling.success")})
+    
+
+@counseling_bp.route("/success")
+def success():
+    return render_template("counseling/success.html")
+
+
+
+
+# 이 코드를 실행하면 _flashes 항목이 session에서 제거됨

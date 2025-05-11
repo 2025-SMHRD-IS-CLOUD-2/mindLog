@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../../static/css/appointment.css">
 </head>
 <body>
-    <form action="http://127.0.0.1:5000/counseling/insert_appointment" method = "post">
+    <form>
 
             <section id = 'centerInfo'>
                 <h3>{{center.NAME}}</h3>
@@ -44,7 +44,7 @@
                     {% endif %}
                 </div>
             </section>
-            <input type="submit" value= "예약하기">
+            <button type = 'button' onclick="insert_appointment('{{center.CENTER_SEQ}}')">예약하기</button>
         </form>
     
     <script>
@@ -89,7 +89,30 @@
                 console.error('에러 발생:', error);
             });
         })
+        function insert_appointment(center_seq) {
+            const form = document.querySelector('form');
+            let formData = new FormData(form)
+            let finalData = {
+                "date":form.date.value,
+                "time":form.appointmenttime.value,
+                "centerSeq":center_seq
+            }
+            console.log(finalData)
+            fetch("http://127.0.0.1:5000/counseling/insert_appointment",{
+                method : "POST",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify(finalData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.href = data.url
+            })
+            .catch(error =>{
+                console.error("에러 발생:",error)
+            })
+        }
     </script>
-    <script src = "../../static/js/appointment.js"></script>
 </body>
 </html>
