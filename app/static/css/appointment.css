@@ -1,5 +1,9 @@
+html{
+    height: 100%;
+}
 body{
     max-width: 768px;
+    height: 100%;
 }
 #availableTime{
     display: flex;
@@ -11,7 +15,6 @@ form{
     flex-direction: column;
     justify-content: center;
     width: 100%;
-    margin-bottom: 40px;
 }
 h3{
     color: #0a8d48;
@@ -23,11 +26,13 @@ section{
     width:auto;
     margin-top:30px;
     border-radius: 10px;
-    box-shadow: 0 0 10px 1px #0a8d48;
+    box-shadow: 0 0 10px 1px #818181;
 }
 label{
     margin:5%;
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 50px;
     width: calc(70%/3);
     box-shadow: 0 0 0 3px #0a8d48 inset;
@@ -41,7 +46,7 @@ label:has(input[type = "radio"]:disabled){
     color: #858585;
 }
 label:has([type = 'radio']:checked){
-    background-color: rgb(175, 255, 175);
+    background-color: #0a8d48;
     color: white;
 }
 input[type = "radio"]{
@@ -52,8 +57,15 @@ input[type = "radio"]:disabled{
     appearance: none;
     
 }
+.wrapper{
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
 button{
     position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
     bottom: 0px;
     align-self: center;
     border: 1px solid #0a8d48;

@@ -24,15 +24,13 @@ def schedule():
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
             today = datetime.now()
-            sql = today.strftime("""SELECT *
+            sql = today.strftime(f"""SELECT *
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
-            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            WHERE USER_SEQ =  '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
             AND APPOINTMENT_DATE = '%Y-%m-%d'""")
-            print(sql)
             cursor.execute(sql)
             result = cursor.fetchall()
-            print(result)
             conn.close()
         return render_template('counseling/schedule.html',result = result,today = today)
     except Exception as e:
@@ -47,9 +45,9 @@ def get_data():
     try:
         conn = get_db_connection()
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = sc.strftime("""SELECT *
+            sql = sc.strftime(f"""SELECT *
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
-            WHERE USER_SEQ = (SELECT USER_SEQ FROM USERS WHERE USER_ID = 'TEST2')
+            WHERE USER_SEQ = '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
             AND APPOINTMENT_DATE = '%Y-%m-%d'""")
             cursor.execute(sql)
