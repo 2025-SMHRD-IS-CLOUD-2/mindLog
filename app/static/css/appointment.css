@@ -64,7 +64,7 @@ input[type = "radio"]:disabled{
 }
 
 button{
-    position: fixed;
+    position: relative;
     left: 50%;
     transform: translateX(-50%);
     bottom: 0px;
@@ -75,11 +75,4 @@ button{
     background-color: #0a8d48;
     border-radius: 10px;
     height: 40px;
-}
-
-@media screen and (min-width: 780px) {
-    button{
-        position: relative;
-        
-    }
 }

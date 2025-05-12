@@ -73,7 +73,7 @@ function showSchedule(days){
             }
             })
             .then(response => response.json())
-            .then(data => {
+            .then(data => { 
                 if(data.length == 0){
                     schedule.innerHTML = "<p>등록된 일정이 없습니다.</p>"
                 }else{
@@ -122,7 +122,7 @@ function showSchedule(days){
                                         appointmentSeq:element["APPOINTMENT_SEQ"] 
                                     };
                                     const params = new URLSearchParams(appointmentSeq).toString();
-                                    window.location.href = `/counseling/cancel-appointment?${params}`;
+                                    window.location.href = `/counseling/update-appointment?${params}`;
                             });
                             buttonWrap.appendChild(cancel);
                             buttonWrap.appendChild(scheduleChange);
