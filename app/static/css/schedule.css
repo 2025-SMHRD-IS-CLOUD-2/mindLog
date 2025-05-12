@@ -30,18 +30,18 @@ body{
   align-items: center;
 }
 #schedules{
+    padding-left: 20px;
+  padding-right: 20px;
   margin-top: 30px;
-  box-shadow: 0px 0px 1px 1px gray;
-  border-radius: 5px;
+  box-shadow: 0px 0px 10px 1px gray;
+  border-radius: 10px;
   width: 80%;
-  max-width: 800px;
+  max-width: 700px;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
 }
 .appointmentInfo{
-  padding-left: 20px;
-  padding-right: 20px;
   padding-bottom: 20px;
   margin: 5px;
   box-shadow: 0px 0px 1px 1px gray;
@@ -74,6 +74,7 @@ body{
   margin-top: 100px;
   border-radius: 10px;
   width: 80%;
+  max-width: 700px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;

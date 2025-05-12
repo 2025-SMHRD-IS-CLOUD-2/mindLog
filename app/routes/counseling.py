@@ -29,7 +29,8 @@ def schedule():
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
             WHERE USER_SEQ =  '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
-            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
+            AND APPOINTMENT_DATE = '%Y-%m-%d'
+            ORDER BY APPOINTMENT_TIME ASC""")
             cursor.execute(sql)
             result = cursor.fetchall()
             conn.close()
@@ -55,7 +56,8 @@ def get_data():
             FROM APPOINTMENTS AS  A INNER JOIN COUNSELINGCENTERS AS C
             WHERE USER_SEQ =  '{session["user_id"]}'
             AND A.CENTER_SEQ = C.CENTER_SEQ
-            AND APPOINTMENT_DATE = '%Y-%m-%d'""")
+            AND APPOINTMENT_DATE = '%Y-%m-%d'
+            ORDER BY APPOINTMENT_TIME ASC""")
             cursor.execute(sql)
             result = cursor.fetchall()
             conn.close()
@@ -312,21 +314,22 @@ def update_appointment(appointment_id):
                           appointment=appointment,
                           center=center)
 
-@counseling_bp.route('/cancel-appointment/<int:appointment_id>', methods=['GET'])
-def cancel_appointment(appointment_id):
+@counseling_bp.route('/cancel-appointment', methods=['GET'])
+def cancel_appointment():
     # 로그인 상태 확인
     if 'user_id' not in session:
         flash('예약 취소를 위해 로그인이 필요합니다.', 'error')
         return redirect(url_for('auth.login'))
-    
+    appointmentSeq = request.args.get('appointmentSeq',type = int)
     # 예약 취소
     conn = get_db_connection()
+    print(appointmentSeq,session["user_id"])
     try:
         with conn.cursor() as cursor:
             
             # 예약 삭제
             sql = "DELETE FROM APPOINTMENTS WHERE APPOINTMENT_SEQ = %s AND USER_SEQ = %s"
-            cursor.execute(sql, (appointment_id, session['user_seq']))
+            cursor.execute(sql, (appointmentSeq, int(session['user_id'])))
             conn.commit()
             
             flash('예약이 취소되었습니다.', 'success')

@@ -21,11 +21,11 @@ function change() {
         cancel.setAttribute("class","cancel");
         // 예약 취소 버튼 이벤트 처리
         cancel.addEventListener("click",function(){
-            const appointmentSeq = {
-                appointmentSeq:element["APPOINTMENT_SEQ"] 
-            };
-            const params = new URLSearchParams(appointmentSeq).toString();
-            window.location.href = `counseling/cancel-appointment?${params}`;
+          
+                const appointmentSeq = element["APPOINTMENT_SEQ"] ;
+           
+            const params = new URLSearchParams({appointmentSeq}).toString();
+            window.location.href = `/counseling/cancel-appointment?${params}`;
         });
         let scheduleChange = document.createElement("button"); // 예약 변경 버튼
         scheduleChange.setAttribute("class","scheduleChange");
@@ -101,6 +101,7 @@ function showSchedule(days){
                             cancel.innerText = "예약취소"
                             cancel.setAttribute("class","cancel");
                             // 예약 취소 버튼 이벤트 처리
+                            console.log(typeof element["APPOINTMENT_SEQ"])
                             cancel.addEventListener("click",function(e){
                                      e.stopPropagation(); // 부모의 클릭 이벤트 방지
                             // 예약 변경 기능 실행
@@ -108,7 +109,7 @@ function showSchedule(days){
                                         appointmentSeq:element["APPOINTMENT_SEQ"] 
                                     };
                                     const params = new URLSearchParams(appointmentSeq).toString();
-                                    window.location.href = `counseling/cancel-appointment?${params}`;
+                                    window.location.href = `/counseling/cancel-appointment?${params}`;
                             });
                             let scheduleChange = document.createElement("button"); // 예약 변경 버튼
                             scheduleChange.setAttribute("class","scheduleChange");
