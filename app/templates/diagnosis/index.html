@@ -1,8 +1,6 @@
-<!DOCTYPE html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <title>역학연구를 위한 우울척도 (CES-D)</title>
+{% extends 'base.html' %}
+
+{% block styles %}
     <link
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
       rel="stylesheet"
@@ -15,9 +13,10 @@
       src="{{ url_for('static', filename='js/diagnosis.js') }}"
       defer
     ></script>
-  </head>
-  <body>
-    <div class="container">
+{% endblock %}
+
+{% block content %}
+  <div class="container">
       <div class="info-row"></div>
       <div class="tabs">
         <button class="tab-btn active" data-tab="survey3">PHQ-9</button>
@@ -255,5 +254,4 @@
             });
         });
     </script>
-  </body>
-</html>
+{% endblock %}
