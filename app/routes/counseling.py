@@ -205,12 +205,12 @@ def appointment():
         conn.close()
     return render_template('counseling/appointment.html', center = center,appointment = appointment,today = today)
 
-@counseling_bp.route("get_time",methods = ["POST"])
+@counseling_bp.route("/get_time",methods = ["POST"])
 def getTime():
     centerInfo = request.get_json()
     selectDay = centerInfo.get("select_day")
     centerSeq = centerInfo.get("center_seq")
-    print(centerSeq)
+
     conn = get_db_connection()
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
@@ -228,6 +228,8 @@ def getTime():
     finally:
         conn.close()
     return jsonify(result)
+        
+    
 
 @counseling_bp.route('/my-appointments')
 def my_appointments():
@@ -252,67 +254,33 @@ def my_appointments():
     
     return render_template('counseling/my_appointments.html', appointments=appointments)
 
-@counseling_bp.route('/update-appointment/<int:appointment_id>', methods=['GET', 'POST'])
-def update_appointment(appointment_id):
+@counseling_bp.route('/update-appointment', methods=['GET', 'POST'])
+def update_appointment():
     # 로그인 상태 확인
     if 'user_id' not in session:
         flash('예약 수정을 위해 로그인이 필요합니다.', 'error')
         return redirect(url_for('auth.login'))
     
-    # 예약 정보 조회
+    data = request.get_json()
+    date = data.get("date")
+    time = data.get("time")
+    seq = data.get("seq")
+    # 예약 정보 업데이트
     conn = get_db_connection()
     try:
-        with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = """SELECT a.*, c.NAME as CENTER_NAME, c.CENTER_SEQ
-                    FROM APPOINTMENTS a
-                    JOIN COUNSELINGCENTERS c ON a.CENTER_SEQ = c.CENTER_SEQ
-                    WHERE a.APPOINTMENT_SEQ = %s AND a.USER_SEQ = %s"""
-            cursor.execute(sql, (appointment_id, session['user_seq']))
-            appointment = cursor.fetchone()
+        with conn.cursor() as cursor:
+            sql = """UPDATE APPOINTMENTS 
+                    SET APPOINTMENT_DATE = %s, APPOINTMENT_TIME = %s,
+                    WHERE APPOINTMENT_SEQ = %s"""
+            cursor.execute(sql, (date, time,seq))
+            conn.commit()
             
-            if not appointment:
-                flash('존재하지 않는 예약이거나 권한이 없습니다.', 'error')
-                return redirect(url_for('counseling.my_appointments'))
-            
-            # 상담센터 정보 조회
-            sql = "SELECT * FROM COUNSELINGCENTERS WHERE CENTER_SEQ = %s"
-            cursor.execute(sql, (appointment['CENTER_SEQ'],))
-            center = cursor.fetchone()
+    except Exception as e:
+        conn.rollback()
+        flash(f'예약 수정 중 오류가 발생했습니다: {str(e)}', 'error')
     finally:
         conn.close()
-    
-    if request.method == 'POST':
-        # 수정된 예약 정보 가져오기
-        date = request.form.get('appointment_date')
-        time = request.form.get('appointment_time')
-        
-        if not date or not time:
-            flash('날짜와 시간을 모두 선택해주세요.', 'error')
-            return render_template('counseling/update_appointment.html', 
-                                  appointment=appointment,
-                                  center=center)
-        
-        # 예약 정보 업데이트
-        conn = get_db_connection()
-        try:
-            with conn.cursor() as cursor:
-                sql = """UPDATE APPOINTMENTS 
-                        SET APPOINTMENT_DATE = %s, APPOINTMENT_TIME = %s, STATUS = %s
-                        WHERE APPOINTMENT_SEQ = %s AND USER_SEQ = %s"""
-                cursor.execute(sql, (date, time, 'pending', appointment_id, session['user_seq']))
-                conn.commit()
-                
-                flash('예약이 성공적으로 수정되었습니다.', 'success')
-                return redirect(url_for('counseling.my_appointments'))
-        except Exception as e:
-            conn.rollback()
-            flash(f'예약 수정 중 오류가 발생했습니다: {str(e)}', 'error')
-        finally:
-            conn.close()
-    
-    return render_template('counseling/update_appointment.html', 
-                          appointment=appointment,
-                          center=center)
+    return "예약 변경이 완료 되었습니다."
 
 @counseling_bp.route('/cancel-appointment', methods=['GET'])
 def cancel_appointment():
@@ -384,5 +352,3 @@ def success():
 
 
 
-
-# 이 코드를 실행하면 _flashes 항목이 session에서 제거됨

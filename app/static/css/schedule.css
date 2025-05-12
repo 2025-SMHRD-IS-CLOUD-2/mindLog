@@ -93,11 +93,12 @@ body{
 }
 .appointmentInfo.selected .buttonWrap{
   display: inline;
-  align-items: center;
-  align-content: center;
+  display: flex;
+  justify-content: end;
 }
 .buttonWrap{
   display: none;
+
 }
 .LMD{
   color: gray;
@@ -121,4 +122,18 @@ button{
   border: none;
   background-color: rgb(213, 255, 193);
   color: green;
+}
+.change-date-div{
+  align-content: space-around ;
+  margin-top: 20px;
+  display: none;
+}
+.change-date-div.hidden{
+  display:block;
+}
+.update-appointment{
+  background-color: #0a8d48;
+  color: white;
+  width: 70px;
+  height: 30px;
 }

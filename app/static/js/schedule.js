@@ -10,52 +10,52 @@ let schedule = document.getElementById("schedule");
 var btnWrap = document.getElementsByClassName("buttonWrap");
 
     
-function change() {
-    let appoints =document.getElementsByClassName("appointmentInfo");
-    for(let i = 0; i< appoints.length; i++){
-        const appoint = appoints[i]
-        let buttonWrap = document.createElement("div")
-        buttonWrap.setAttribute("class","buttonWrap");
-        let cancel = document.createElement("button"); // 예약 취소 버튼
-        cancel.innerText = "예약취소"
-        cancel.setAttribute("class","cancel");
-        // 예약 취소 버튼 이벤트 처리
-        cancel.addEventListener("click",function(){
+// function change() {
+//     let appoints =document.getElementsByClassName("appointmentInfo");
+//     for(let i = 0; i< appoints.length; i++){
+//         const appoint = appoints[i]
+//         let buttonWrap = document.createElement("div")
+//         buttonWrap.setAttribute("class","buttonWrap");
+//         let cancel = document.createElement("button"); // 예약 취소 버튼
+//         cancel.innerText = "예약취소"
+//         cancel.setAttribute("class","cancel");
+//         // 예약 취소 버튼 이벤트 처리
+//         cancel.addEventListener("click",function(){
           
-                const appointmentSeq = element["APPOINTMENT_SEQ"] ;
+//                 const appointmentSeq = element["APPOINTMENT_SEQ"] ;
            
-            const params = new URLSearchParams({appointmentSeq}).toString();
-            window.location.href = `/counseling/cancel-appointment?${params}`;
-        });
-        let scheduleChange = document.createElement("button"); // 예약 변경 버튼
-        scheduleChange.setAttribute("class","scheduleChange");
-        scheduleChange.innerText = "예약 변경"
-        // 예약 변경 버튼 이벤트 처리
-        scheduleChange.addEventListener("click",function(){
+//             const params = new URLSearchParams({appointmentSeq}).toString();
+//             window.location.href = `/counseling/cancel-appointment?${params}`;
+//         });
+//         let scheduleChange = document.createElement("button"); // 예약 변경 버튼
+//         scheduleChange.setAttribute("class","scheduleChange");
+//         scheduleChange.innerText = "예약 변경"
+//         // 예약 변경 버튼 이벤트 처리
+//         scheduleChange.addEventListener("click",function(){
             
-        });
-        buttonWrap.appendChild(cancel);
-        buttonWrap.appendChild(scheduleChange);
-        appoint.appendChild(buttonWrap);
-        schedule.appendChild(appoint)
-        appoint.addEventListener("click",function(e){
-            const clicked = e.currentTarget.closest(".appointmentInfo");
-            if (!clicked) return;
-            // 현재 이미 선택된 요소
-            const currentlySelected = document.querySelector(".appointmentInfo.selected");
-            // 이미 선택된 걸 다시 클릭했으면 해제
-            if (currentlySelected === clicked) {
-                clicked.classList.remove("selected");
-            } else { // 이외의 것을 선택하면 기존 선택된 것의 classList에서 selected를 제거
-                if (currentlySelected) currentlySelected.classList.remove("selected");
-                    // 현재 선택한 것의 classList에 selected 클래스 추가
-                    clicked.classList.add("selected");
-                }
-            })
-    }
-}
+//         });
+//         buttonWrap.appendChild(cancel);
+//         buttonWrap.appendChild(scheduleChange);
+//         appoint.appendChild(buttonWrap);
+//         schedule.appendChild(appoint)
+//         appoint.addEventListener("click",function(e){
+//             const clicked = e.currentTarget.closest(".appointmentInfo");
+//             if (!clicked) return;
+//             // 현재 이미 선택된 요소
+//             const currentlySelected = document.querySelector(".appointmentInfo.selected");
+//             // 이미 선택된 걸 다시 클릭했으면 해제
+//             if (currentlySelected === clicked) {
+//                 clicked.classList.remove("selected");
+//             } else { // 이외의 것을 선택하면 기존 선택된 것의 classList에서 selected를 제거
+//                 if (currentlySelected) currentlySelected.classList.remove("selected");
+//                     // 현재 선택한 것의 classList에 selected 클래스 추가
+//                     clicked.classList.add("selected");
+//                 }
+//             })
+//     }
+// }
 
-change()
+// change()
 
 // 날짜 클릭하면 당일 schedule 보여주는 함수
 function showSchedule(days){
@@ -101,7 +101,7 @@ function showSchedule(days){
                             cancel.innerText = "예약취소"
                             cancel.setAttribute("class","cancel");
                             // 예약 취소 버튼 이벤트 처리
-                            console.log(typeof element["APPOINTMENT_SEQ"])
+                            
                             cancel.addEventListener("click",function(e){
                                      e.stopPropagation(); // 부모의 클릭 이벤트 방지
                             // 예약 취소 기능 실행
@@ -118,11 +118,13 @@ function showSchedule(days){
                             scheduleChange.addEventListener("click",function(e){
                                 e.stopPropagation(); // 부모의 클릭 이벤트 방지
                                 // 예약 변경 기능 실행
-                                const appointmentSeq = {
-                                        appointmentSeq:element["APPOINTMENT_SEQ"] 
-                                    };
-                                    const params = new URLSearchParams(appointmentSeq).toString();
-                                    window.location.href = `/counseling/update-appointment?${params}`;
+                                const appointmentInfo = e.currentTarget.closest(".appointmentInfo");
+                                const changeDiv = appointmentInfo.querySelector(".change-date-div");
+                                    
+                                    if (changeDiv) {
+                                        changeDiv.classList.toggle("hidden");
+                                    }
+                                
                             });
                             buttonWrap.appendChild(cancel);
                             buttonWrap.appendChild(scheduleChange);
@@ -142,6 +144,7 @@ function showSchedule(days){
                                         clicked.classList.add("selected");
                                     }
                             })
+                            changeDate(appoint,element["APPOINTMENT_SEQ"],element["CENTER_SEQ"])
                         })
                 }
             })
@@ -150,6 +153,92 @@ function showSchedule(days){
             });
         })
 }
+
+function changeDate(appoint,appointmentSeq,centerSeq){
+    let changeDateDiv = document.createElement("div")
+    changeDateDiv.setAttribute("class","change-date-div")
+    changeDateDiv.addEventListener("click",function(e){
+        e.stopPropagation();
+    })
+    const dateInput = document.createElement("input");
+    dateInput.type = "date";
+    dateInput.name = "changeDate"; 
+    let timeSelect = document.createElement("select");
+    timeSelect.setAttribute("name","time");
+    timeSelect.innerHTML = "<option disabled selected>변경일을 먼저 선택하세요</option>"
+    changeDateDiv.appendChild(dateInput);
+     changeDateDiv.appendChild(timeSelect); 
+    dateInput.addEventListener("change",function(){
+        getAvailableTime(this.value,timeSelect,centerSeq,)
+    })
+
+    let button = document.createElement("button")
+    button.className ="update-appointment"
+    button.innerText = "변경하기"
+    button.type = "button"
+    button.addEventListener("click",function(){
+        fetch("http://127.0.0.1:5000/counseling/update-appointment",{
+            method : "POST",
+            body: JSON.stringify({ "date":dateInput.value, "time":timeSelect.value,"seq":appointmentSeq}),
+            headers:{
+                "Content-Type":"application/json"}
+        })
+        .then(res => res.text())
+        .then(data =>{
+            alert(data)
+            location.reload(true);
+        })
+        .catch(error => {
+                console.error('에러 발생:', error);
+        });
+    })
+    changeDateDiv.appendChild(button);
+    appoint.appendChild(changeDateDiv);
+    
+    
+}
+
+
+async function getAvailableTime(date,timeSelect,seq){
+    await fetch("http://127.0.0.1:5000/counseling/get_time",{
+        method: 'POST',
+            body: JSON.stringify({ "select_day":date, "center_seq": parseInt(seq)}),
+            headers: {
+            'Content-Type': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            timeSelect.innerHTML = ""
+            
+            for(let i = 9; i <= 18; i++){
+                if( i == 12 || i == 13)continue;
+                if(data.length == 0){
+                    let time = document.createElement("option");
+                        time.setAttribute("value",`${i}:00:00`)
+                        time.innerText = `${i}시 00분`
+                        timeSelect.appendChild(time);
+                }else{
+                    for(let j = 0; j < data.length; j++ ){
+                        if(i == data[j]["APPOINTMENT_TIME"]){
+                        }else if(j == data.length-1){
+                            let time = document.createElement("option");
+                            time.setAttribute("value",`${i}:00:00`);
+                            time.innerText = `${i}시 00분`
+                            timeSelect.appendChild(time);
+                        }
+                    }
+                }
+            }
+        })
+        .catch(error => {
+                console.error('에러 발생:', error);
+            });
+}
+
+
+
+
 
 // 캘린더 출력 함수
 function calendar(year,currMonth,today) {
