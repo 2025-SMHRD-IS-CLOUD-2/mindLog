@@ -101,7 +101,9 @@ function showSchedule(days){
                             cancel.innerText = "예약취소"
                             cancel.setAttribute("class","cancel");
                             // 예약 취소 버튼 이벤트 처리
-                            cancel.addEventListener("click",function(){
+                            cancel.addEventListener("click",function(e){
+                                     e.stopPropagation(); // 부모의 클릭 이벤트 방지
+                            // 예약 변경 기능 실행
                                     const appointmentSeq = {
                                         appointmentSeq:element["APPOINTMENT_SEQ"] 
                                     };
@@ -112,8 +114,9 @@ function showSchedule(days){
                             scheduleChange.setAttribute("class","scheduleChange");
                             scheduleChange.innerText = "예약 변경"
                             // 예약 변경 버튼 이벤트 처리
-                            scheduleChange.addEventListener("click",function(){
-
+                            scheduleChange.addEventListener("click",function(e){
+                                e.stopPropagation(); // 부모의 클릭 이벤트 방지
+                                // 예약 변경 기능 실행
                             });
                             buttonWrap.appendChild(cancel);
                             buttonWrap.appendChild(scheduleChange);
