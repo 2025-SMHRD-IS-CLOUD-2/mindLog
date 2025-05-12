@@ -1,11 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block styles %}
+<style>
+  .success-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    min-height: 300px;
+  }
+  
+  .success-message {
+    margin: 30px 0;
+    font-size: 20px;
+    color: #333;
+  }
+  
+  .success-icon {
+    font-size: 60px;
+    color: #4CAF50;
+    margin-bottom: 20px;
+  }
+  
+  .home-button {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s;
+  }
+  
+  .home-button:hover {
+    background-color: #1565c0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-container">
+  <div class="success-icon">✓</div>
+  <h2 class="success-message">예약이 완료되었습니다!</h2>
+  <p>상담 일정은 마이페이지에서 확인하실 수 있습니다.</p>
+  
+  <button class="home-button" onclick="location.href='{{ url_for('main.index') }}'">
+    홈 화면으로 돌아가기
+  </button>
+</div>
+
+{% endblock %}
