@@ -104,7 +104,7 @@ function showSchedule(days){
                             console.log(typeof element["APPOINTMENT_SEQ"])
                             cancel.addEventListener("click",function(e){
                                      e.stopPropagation(); // 부모의 클릭 이벤트 방지
-                            // 예약 변경 기능 실행
+                            // 예약 취소 기능 실행
                                     const appointmentSeq = {
                                         appointmentSeq:element["APPOINTMENT_SEQ"] 
                                     };
@@ -118,6 +118,11 @@ function showSchedule(days){
                             scheduleChange.addEventListener("click",function(e){
                                 e.stopPropagation(); // 부모의 클릭 이벤트 방지
                                 // 예약 변경 기능 실행
+                                const appointmentSeq = {
+                                        appointmentSeq:element["APPOINTMENT_SEQ"] 
+                                    };
+                                    const params = new URLSearchParams(appointmentSeq).toString();
+                                    window.location.href = `/counseling/cancel-appointment?${params}`;
                             });
                             buttonWrap.appendChild(cancel);
                             buttonWrap.appendChild(scheduleChange);
@@ -198,7 +203,7 @@ calendar(year,currMonth,today);
 // body: JSON.stringify({ url: window.location.href }),
 // headers: {
 // 'Content-Type': 'application/json'
-// })
+// })z
 
 let changeMonth = document.getElementsByClassName("changeMonth");
 for(let i = 0; i < changeMonth.length;i++){ // 월을 바꾸면 그에 맞는 달력으로 변환
