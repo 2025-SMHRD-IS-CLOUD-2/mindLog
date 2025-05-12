@@ -9,8 +9,8 @@ let scheduleDate = document.getElementById("scheduleDate");
 let schedule = document.getElementById("schedule");
 var btnWrap = document.getElementsByClassName("buttonWrap");
 
-
-function name() {
+    
+function change() {
     let appoints =document.getElementsByClassName("appointmentInfo");
     for(let i = 0; i< appoints.length; i++){
         const appoint = appoints[i]
@@ -54,7 +54,10 @@ function name() {
             })
     }
 }
-                            
+
+change()
+
+// 날짜 클릭하면 당일 schedule 보여주는 함수
 function showSchedule(days){
     days.addEventListener("click", async function() {
         schedule.innerHTML = "";
@@ -138,6 +141,8 @@ function showSchedule(days){
             });
         })
 }
+
+// 캘린더 출력 함수
 function calendar(year,currMonth,today) {
     WrapDay.innerHTML = ""
     let month = document.getElementsByClassName("month");
@@ -190,6 +195,7 @@ calendar(year,currMonth,today);
 // headers: {
 // 'Content-Type': 'application/json'
 // })
+
 let changeMonth = document.getElementsByClassName("changeMonth");
 for(let i = 0; i < changeMonth.length;i++){ // 월을 바꾸면 그에 맞는 달력으로 변환
     changeMonth[i].addEventListener("click",function () {

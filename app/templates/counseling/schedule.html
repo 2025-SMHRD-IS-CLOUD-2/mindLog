@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="../../static/css/schedule.css">
-</head>
-<body>      
+    {% extends 'base.html' %} {% block styles %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/chatbot.css') }}"
+/>
+<link rel="stylesheet" href="../../static/css/schedule.css">
+{% endblock %} {% block content %}
     <div id = 'calendar'>
         <div id = "month">
             <button class = 'changeMonth'><</button>
@@ -46,7 +44,10 @@
         </div>
     </div>
     <script>
-        function name() {
+        let data = "{{result}}"
+        data.replace("&#39;","\"")
+        console.log("{{result}}")
+        function change() {
             let appoints =document.getElementsByClassName("appointmentInfo");
             for(let i = 0; i< appoints.length; i++){
                 const appoint = appoints[i]
@@ -90,7 +91,7 @@
                     })
             }
         }
+        change()
     </script>
     <script src = "../../static/js/schedule.js"></script>
-</body>
-</html>
+{% endblock %}
