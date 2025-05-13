@@ -182,6 +182,7 @@ def appointment():
     address = request.args.get("address")
     phone = request.args.get("phone")
     today = datetime.now()
+    hour = today.hour
     conn = get_db_connection()
     today = today.strftime("%Y-%m-%d")
     try:
@@ -203,7 +204,7 @@ def appointment():
 
     finally:
         conn.close()
-    return render_template('counseling/appointment.html', center = center,appointment = appointment,today = today)
+    return render_template('counseling/appointment.html', center = center,appointment = appointment,today = today,hour = hour)
 
 @counseling_bp.route("/get_time",methods = ["POST"])
 def getTime():
