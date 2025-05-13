@@ -97,10 +97,11 @@
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        selectedDay = new Date(selectDate.value);
+        
         for (let i = 9; i <= 18; i++) {
           if (i == 12 || i == 13) continue;
-          if(selectDate.innerText < date.getDate()){
+          if(selectedDay < date){
             let time = document.createElement("label");
             time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00" disabled>${i}시`;
             availableTime.appendChild(time);
