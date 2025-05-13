@@ -1,0 +1,49 @@
+.findpw-container {
+  max-width: 400px;
+  margin: 140px auto;
+  padding: 24px;
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  justify-content: center;
+  display: grid;
+}
+
+.findpw-button {
+  background-color: #0a8d48;
+  color: #fff;
+  border: none;
+}
+
+#findpw-step1 {
+  margin-bottom: 15px;
+  height: 40px;
+}
+
+#findpw-step3 {
+  display: flex;
+}
+
+#findpw-step3 button {
+  margin-left: 5px;
+}
+
+label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+input {
+  height: 25px;
+}
+
+.findpw-button {
+  height: 30px;
+  font-weight: 600;
+}
+
+#findpw-result {
+  color: red;
+  font-weight: 600;
+  font-size: 12px;
+}

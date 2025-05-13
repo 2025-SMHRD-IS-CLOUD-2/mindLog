@@ -270,67 +270,85 @@ def delete_account():
     
     return render_template('auth/delete.html', title='mindLog - 회원탈퇴')
 
-@auth_bp.route('/find-password', methods=['GET', 'POST'])
+@auth_bp.route('/find-password', methods=['GET'])
 def find_password():
-    """비밀번호 찾기 페이지"""
-    if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
-    
-    # POST 요청 처리 (비밀번호 찾기 폼 제출)
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        
-        if not username or not email:
-            flash('아이디와 이메일을 모두 입력해주세요.', 'danger')
-            return render_template('auth/find_password.html', title='mindLog - 비밀번호 찾기')
-        
-        # DB 연결
-        conn = None
-        try:
-            conn = pymysql.connect(
-                host=Config.DB_HOST,
-                port=Config.DB_PORT,
-                user=Config.DB_USER,
-                password=Config.DB_PASSWORD,
-                db=Config.DB_NAME,
-                charset='utf8mb4'
-            )
-            
-            with conn.cursor(pymysql.cursors.DictCursor) as cur:
-                # 사용자 조회
-                sql = "SELECT * FROM USERS WHERE username = %s AND email = %s"
-                cur.execute(sql, (username, email))
-                user = cur.fetchone()
-                
-                if user:
-                    # 임시 비밀번호 생성 및 발송 로직
-                    # (실제 구현에서는 이메일 발송 기능 추가 필요)
-                    import random
-                    import string
-                    
-                    temp_password = ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=12))
-                    hashed_password = bcrypt.generate_password_hash(temp_password).decode('utf-8')
-                    
-                    # 비밀번호 업데이트
-                    update_sql = "UPDATE USERS SET password_hash = %s, password_reset_at = %s WHERE id = %s"
-                    cur.execute(update_sql, (hashed_password, datetime.now(), user['id']))
-                    conn.commit()
-                    
-                    # 이메일 발송 로직 (예시)
-                    # send_email(email, '비밀번호 재설정', f'임시 비밀번호: {temp_password}')
-                    
-                    flash('임시 비밀번호가 이메일로 발송되었습니다. 이메일을 확인해주세요.', 'success')
-                    return redirect(url_for('auth.login'))
-                else:
-                    flash('일치하는 사용자 정보가 없습니다. 아이디와 이메일을 확인해주세요.', 'danger')
-        except Exception as e:
-            flash(f'오류가 발생했습니다: {e}', 'danger')
-        finally:
-            if conn:
-                conn.close()
-    
     return render_template('auth/find_password.html', title='mindLog - 비밀번호 찾기')
+
+@auth_bp.route('/find-password/question', methods=['POST'])
+def get_security_question():
+    user_id = request.json.get('user_id')
+    conn = None
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor(pymysql.cursors.DictCursor) as cur:
+            sql = "SELECT SECURITY_QUESTION FROM USERS WHERE USER_ID = %s"
+            cur.execute(sql, (user_id,))
+            user = cur.fetchone()
+            if user:
+                return jsonify({'success': True, 'question': user['SECURITY_QUESTION']})
+            else:
+                return jsonify({'success': False, 'message': '존재하지 않는 아이디입니다.'})
+    finally:
+        if conn:
+            conn.close()
+
+@auth_bp.route('/find-password/verify', methods=['POST'])
+def verify_security_answer():
+    user_id = request.json.get('user_id')
+    answer = request.json.get('answer')
+    conn = None
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor(pymysql.cursors.DictCursor) as cur:
+            sql = "SELECT SECURITY_ANSWER FROM USERS WHERE USER_ID = %s"
+            cur.execute(sql, (user_id,))
+            user = cur.fetchone()
+            if user and user['SECURITY_ANSWER'] == answer:
+                return jsonify({'success': True})
+            else:
+                return jsonify({'success': False, 'message': '답변이 일치하지 않습니다.'})
+    finally:
+        if conn:
+            conn.close()
+
+@auth_bp.route('/find-password/reset', methods=['POST'])
+def reset_password():
+    user_id = request.json.get('user_id')
+    new_password = request.json.get('new_password')
+    bcrypt = Bcrypt()
+    hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+    conn = None
+    try:
+        conn = pymysql.connect(
+            host=Config.DB_HOST,
+            port=Config.DB_PORT,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            db=Config.DB_NAME,
+            charset='utf8mb4'
+        )
+        with conn.cursor() as cur:
+            sql = "UPDATE USERS SET PASSWORD_HASH = %s WHERE USER_ID = %s"
+            cur.execute(sql, (hashed_password, user_id))
+            conn.commit()
+            return jsonify({'success': True})
+    finally:
+        if conn:
+            conn.close()
 
 @auth_bp.route('/check-id', methods=['POST'])
 def check_id():
