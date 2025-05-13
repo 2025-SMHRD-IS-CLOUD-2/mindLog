@@ -125,10 +125,28 @@ class ChatbotService:
         # 답변을 score로 저장
         options = self.survey_questions[self.current_question_idx]['options']
         score_to_save = None
-        for opt in options:
-            if answer == opt['text']:
-                score_to_save = opt['score']
+
+        # 각 옵션의 키워드 매핑
+        option_keywords = {
+            0: ['없', '아니', '전혀'],  # 1번: 없음
+            1: ['몇', '가끔', '때때로', '드물게'],  # 2번: 2-6일
+            2: ['자주', '많이', '대부분', '주로'],  # 3번: 7-11일
+            3: ['거의', '항상', '매일', '계속']  # 4번: 거의 매일
+        }
+        
+        # 답변에 포함된 키워드로 점수 매기기
+        for opt_idx, keywords in option_keywords.items():
+            if any(keyword in answer for keyword in keywords):
+                score_to_save = options[opt_idx]['score']
                 break
+        
+        # 키워드 매칭이 안된 경우 정확한 텍스트 매칭 시도
+        if score_to_save is None:
+            for opt in options:
+                if answer == opt['text']:
+                    score_to_save = opt['score']
+                    break
+        
         if score_to_save is not None:
             self.survey_answers.append(score_to_save)
         else:
@@ -138,6 +156,10 @@ class ChatbotService:
             q = self.survey_questions[self.current_question_idx]
             msg1 = q['text']
             msg2 = self._format_options(q['options'])
+            # 마지막 문항이면 안내 멘트 추가
+            if self.current_question_idx == len(self.survey_questions) - 1:
+                msg3 = '\n※ 이 답변을 제출하면 결과가 바로 안내됩니다.'
+                return [msg1, msg2, msg3]
             return [msg1, msg2]
         else:
             self.survey_in_progress = False
@@ -157,8 +179,8 @@ class ChatbotService:
             with conn.cursor() as cursor:
                 sql = """
                     INSERT INTO ASSESSMENT_HISTORY 
-                    (USER_SEQ, ASSESSMENT_TYPE, SCORE, RISK_LEVEL, DETAILS, ASSESSMENT_DATE)
-                    VALUES (%s, %s, %s, %s, %s, NOW())
+                    (USER_SEQ, ASSESSMENT_TYPE, SCORE, RISK_LEVEL, DETAILS)
+                    VALUES (%s, %s, %s, %s, %s)
                 """
                 cursor.execute(sql, (user_id, assessment_type, score, risk_level, details))
             conn.commit()
@@ -170,8 +192,11 @@ class ChatbotService:
 
     def calculate_survey_result(self):
         """설문 결과 계산"""
-        # 점수 계산
-        total_score = sum(int(score) for score in self.survey_answers)
+        # 점수 계산 (숫자만 합산)
+        total_score = 0
+        for score in self.survey_answers:
+            if isinstance(score, (int, float)) or (isinstance(score, str) and score.isdigit()):
+                total_score += int(score)
         
         # 위험도 판단
         risk_level = 'normal'
@@ -222,7 +247,12 @@ class ChatbotService:
         
         response = self.get_gpt_feedback(self.survey_answers, total_score)
         result_message += response + "\n"
-        result_message += "추가로 다른 자가문진표(CES-D, CESD-10-D 등)를 진행하시겠어요? (네/아니오)"
+        result_message += "추가로 다른 자가문진표(CES-D, CESD-10-D 등)를 진행하시겠어요? (네/아니오)\n\n"
+        result_message += "💡 참고사항:\n"
+        result_message += "- 이 자가진단은 전문가의 진단을 대체할 수 없습니다.\n"
+        result_message += "- 결과가 심각하다고 느끼시면 전문가와 상담하시는 것을 권장드립니다.\n"
+        result_message += "- 정신건강의학과나 정신건강복지센터에서 전문가의 도움을 받으실 수 있습니다.\n"
+        result_message += "- 자살예방상담전화(1393)는 24시간 운영됩니다."
         self.ask_additional_survey = True
         return result_message
 
@@ -454,6 +484,8 @@ class ChatbotService:
                 conn.commit()
         except Exception as e:
             print(f"메시지 저장 오류: {e}")
+            if conn:
+                conn.rollback()
         finally:
             if conn:
                 conn.close() 
