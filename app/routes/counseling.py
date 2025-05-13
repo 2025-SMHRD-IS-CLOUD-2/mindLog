@@ -270,7 +270,7 @@ def update_appointment():
     try:
         with conn.cursor() as cursor:
             sql = """UPDATE APPOINTMENTS 
-                    SET APPOINTMENT_DATE = %s, APPOINTMENT_TIME = %s,
+                    SET APPOINTMENT_DATE = %s, APPOINTMENT_TIME = %s
                     WHERE APPOINTMENT_SEQ = %s"""
             cursor.execute(sql, (date, time,seq))
             conn.commit()

@@ -3,115 +3,123 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/chatbot.css') }}"
 />
-    <link rel="stylesheet" href="../../static/css/appointment.css">
-    {% endblock %} {% block content %}
-    <div class = 'wrapper'>
-    <form>
+<link rel="stylesheet" href="../../static/css/appointment.css" />
+{% endblock %} {% block content %}
+<div class="wrapper">
+  <form>
+    <section id="centerInfo">
+      <h3>{{center.NAME}}</h3>
+      <span>{{center.ADDRESS}}</span>
+      <br />
+      <span>{{center.CONTACT}}</span>
+    </section>
+    <section>
+      <input type="date" id="selectDate" name="date" value="{{today}}" />
+      <div id="availableTime">
+        {% if not appointment%} {% for i in range(9,19)%}
+        <label>
+          <input
+            type="radio"
+            name="appointmenttime"
+            value="{{i}}:00:00"
+          />{{i}}시
+        </label>
+        {% endfor%} {% else%} {% for i in range(9,19)%} {% for item in
+        appointment %} {%if i == 12 or i == 13 %} {%continue%} {% elif i ==
+        item.APPOINTMENT_TIME|int%}
+        <label>
+          <input
+            type="radio"
+            name="appointmenttime"
+            value="{{item.APPOINTMENT_TIME}}:00:00"
+            disabled
+          />{{item.APPOINTMENT_TIME}}시
+        </label>
+        {% break %} {% elif loop.index == appointment|length%}
+        <label>
+          <input
+            type="radio"
+            name="appointmenttime"
+            value="{{i}}:00:00"
+          />{{i}}시
+        </label>
+        {% endif%} {% endfor %} {% endfor %} {% endif %}
+      </div>
+    </section>
+  </form>
+  <button type="button" onclick="insert_appointment('{{center.CENTER_SEQ}}')">
+    예약하기
+  </button>
+</div>
 
-            <section id = 'centerInfo'>
-                <h3>{{center.NAME}}</h3>
-                <span>{{center.ADDRESS}}</span>
-                <br>
-                <span>{{center.CONTACT}}</span>
-            </section>
-            <section>
-                <input type="date" id = "selectDate" name="date" value = {{today}}>
-                <div id = "availableTime">
-                    {% if not appointment%}
-                        {% for i in range(9,19)%}
-                            <label>
-                                <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
-                            </label>
-                        {% endfor%}
-                    {% else%}
-                    {% for i in range(9,19)%}
-                            {% for item in appointment %}
-                                {%if i == 12 or i == 13 %}
-                                    {%continue%}
-                                {% elif i == item.APPOINTMENT_TIME|int%}
-                                <label>
-                                <input type = "radio" name = "appointmenttime" value = {{item.APPOINTMENT_TIME}}:00:00 disabled>{{item.APPOINTMENT_TIME}}시
-                                </label>
-                                {% break %}
-                                {% elif loop.index == appointment|length%}
-                                    <label>
-                                        <input type = "radio" name = "appointmenttime" value = {{i}}:00:00>{{i}}시
-                                    </label>
-                                {% endif%}
-                            {% endfor %}
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </section>
-        </form>
-        <button type = 'button' onclick="insert_appointment('{{center.CENTER_SEQ}}')">예약하기</button>
-        </div>
-    
-    <script>
-        let selectDate = document.getElementById("selectDate");
-        let availableTime = document.getElementById("availableTime");
-        selectDate.addEventListener("change",async() => {
-            availableTime.innerHTML = "";
-        console.log(selectDate.value);
-        await fetch("http://127.0.0.1:5000/counseling/get_time",{
-        method: 'POST',
-            body: JSON.stringify({ "select_day":selectDate.value, "center_seq": parseInt("{{center.CENTER_SEQ}}")}),
-            headers: {
-            'Content-Type': 'application/json'
+<script>
+  let selectDate = document.getElementById("selectDate");
+  let availableTime = document.getElementById("availableTime");
+  selectDate.addEventListener("change", async () => {
+    availableTime.innerHTML = "";
+    console.log(selectDate.value);
+    await fetch("http://127.0.0.1:5000/counseling/get_time", {
+      method: "POST",
+      body: JSON.stringify({
+        select_day: selectDate.value,
+        center_seq: parseInt("{{center.CENTER_SEQ}}"),
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        for (let i = 9; i <= 18; i++) {
+          if (i == 12 || i == 13) continue;
+          if (data.length == 0) {
+            let time = document.createElement("label");
+            time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
+            availableTime.appendChild(time);
+          } else {
+            for (let j = 0; j < data.length; j++) {
+              if (i == data[j]["APPOINTMENT_TIME"]) {
+                let time = document.createElement("label");
+                time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00" disabled>${i}시`;
+                availableTime.appendChild(time);
+                break;
+              } else if (j == data.length - 1) {
+                let time = document.createElement("label");
+                time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
+                availableTime.appendChild(time);
+              }
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            console.log(data)
-            for(let i = 9; i <= 18; i++){
-                if( i == 12 || i == 13)continue;
-                if(data.length == 0){
-                    let time = document.createElement("label");
-                        time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
-                        availableTime.appendChild(time);
-                }else{
-                    for(let j = 0; j < data.length; j++ ){
-                        if(i == data[j]["APPOINTMENT_TIME"]){
-                            let time = document.createElement("label");
-                            time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00" disabled>${i}시`;
-                            availableTime.appendChild(time);
-                            break;
-                        }else if(j == data.length-1){
-                            let time = document.createElement("label");
-                            time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
-                            availableTime.appendChild(time);
-                        }
-                    }
-                }
-            }
-        })
-        .catch(error => {
-                console.error('에러 발생:', error);
-            });
-        })
-        function insert_appointment(center_seq) {
-            const form = document.querySelector('form');
-            let formData = new FormData(form)
-            let finalData = {
-                "date":form.date.value,
-                "time":form.appointmenttime.value,
-                "centerSeq":center_seq
-            }
-            console.log(finalData)
-            fetch("http://127.0.0.1:5000/counseling/insert_appointment",{
-                method : "POST",
-                headers: {
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(finalData)
-            })
-            .then(res => res.json())
-            .then(data => {
-                window.location.href = data.url
-            })
-            .catch(error =>{
-                console.error("에러 발생:",error)
-            })
+          }
         }
-    </script>
+      })
+      .catch((error) => {
+        console.error("에러 발생:", error);
+      });
+  });
+  function insert_appointment(center_seq) {
+    const form = document.querySelector("form");
+    let formData = new FormData(form);
+    let finalData = {
+      date: form.date.value,
+      time: form.appointmenttime.value,
+      centerSeq: center_seq,
+    };
+    console.log(finalData);
+    fetch("http://127.0.0.1:5000/counseling/insert_appointment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(finalData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        window.location.href = data.url;
+      })
+      .catch((error) => {
+        console.error("에러 발생:", error);
+      });
+  }
+</script>
 {% endblock %}

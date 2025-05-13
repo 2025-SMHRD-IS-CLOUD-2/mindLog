@@ -1,97 +1,48 @@
-    {% extends 'base.html' %} {% block styles %}
+{% extends 'base.html' %} {% block styles %}
 <link
   rel="stylesheet"
   href="{{ url_for('static', filename='css/chatbot.css') }}"
 />
-<link rel="stylesheet" href="../../static/css/schedule.css">
+<link rel="stylesheet" href="../../static/css/schedule.css" />
 {% endblock %} {% block content %}
-    <div id = 'calendar'>
-        <div id = "month">
-            <button class = 'changeMonth'><</button>
-            <span class = 'month'></span>
-            <button class = "changeMonth">></button>
-        </div>
-        <span class = 'week'>일</span>
-        <span class = 'week'>월</span>
-        <span class = 'week'>화</span>
-        <span class = 'week'>수</span>
-        <span class = 'week'>목</span>
-        <span class = 'week'>금</span>
-        <span class = 'week'>토</span>
-        <div id = "wrap_day"></div>
+<div id="calendar">
+  <div id="month">
+    <button class="changeMonth"><</button>
+    <span class="month"></span>
+    <button class="changeMonth">></button>
+  </div>
+  <span class="week">일</span>
+  <span class="week">월</span>
+  <span class="week">화</span>
+  <span class="week">수</span>
+  <span class="week">목</span>
+  <span class="week">금</span>
+  <span class="week">토</span>
+  <div id="wrap_day"></div>
+</div>
+<div id="schedules">
+  <div id="scheduleDate">{{today.year}}년{{today.month}}월 {{today.day}}일</div>
+  <div id="schedule">
+    {% if result%} {% for item in result %}
+    <div class="appointmentInfo">
+      <div class="center-info">
+        <h3>{{item.NAME}}</h3>
+        <span class="center-info">{{item.ADDRESS}}</span>
+        <span class="center-info">{{item.CONTACT}}</span>
+      </div>
+      <div class="time">
+        <p>
+          {{item.APPOINTMENT_DATE.year}}년 {{item.APPOINTMENT_DATE.month}}월
+          {{item.APPOINTMENT_DATE.day}}일
+        </p>
+        <p>{{item.APPOINTMENT_TIME.replace(":00:00","")}}시 0분</p>
+      </div>
     </div>
-    <div id = 'schedules'>
-        <div id = "scheduleDate">{{today.year}}년{{today.month}}월 {{today.day}}일</div>
-        <div id = "schedule">
-        {% if result%}
-        {% for item in result %}
-            <div class = "appointmentInfo">
-                <div class = 'center-info'>
-                    <h3>{{item.NAME}}</h3>
-                    <span class = 'center-info'>{{item.ADDRESS}}</span>
-                    <span class = "center-info">{{item.CONTACT}}</span>
-                </div>
-                <div class = 'time'>
-                    <p>{{item.APPOINTMENT_DATE.year}}년 {{item.APPOINTMENT_DATE.month}}월 {{item.APPOINTMENT_DATE.day}}일</p>
-                    <p>{{item.APPOINTMENT_TIME.replace(":00:00","")}}시 0분</p>
-                </div>
-                
-            </div>
-        {% endfor%}
-        {% else %}
-            <p>등록된 일정이 없습니다.</p>
-        {% endif%}
-        </div>
-    </div>
-    <script>
-        // let data = "{{result}}"
-        // data.replace("&#39;","\"")
-        // console.log("{{result}}")
-        // function change() {
-        //     let appoints =document.getElementsByClassName("appointmentInfo");
-        //     for(let i = 0; i< appoints.length; i++){
-        //         const appoint = appoints[i]
-        //         let buttonWrap = document.createElement("div")
-        //         buttonWrap.setAttribute("class","buttonWrap");
-        //         let cancel = document.createElement("button"); // 예약 취소 버튼
-        //         cancel.innerText = "예약취소"
-        //         cancel.setAttribute("class","cancel");
-        //         // 예약 취소 버튼 이벤트 처리
-        //         cancel.addEventListener("click",function(){
-        //             const appointmentSeq = {
-        //                 appointmentSeq:element["APPOINTMENT_SEQ"] 
-        //             };
-        //             const params = new URLSearchParams(appointmentSeq).toString();
-        //             window.location.href = `counseling/cancel-appointment?${params}`;
-        //         });
-        //         let scheduleChange = document.createElement("button"); // 예약 변경 버튼
-        //         scheduleChange.setAttribute("class","scheduleChange");
-        //         scheduleChange.innerText = "예약 변경"
-        //         // 예약 변경 버튼 이벤트 처리
-        //         scheduleChange.addEventListener("click",function(){
-                    
-        //         });
-        //         buttonWrap.appendChild(cancel);
-        //         buttonWrap.appendChild(scheduleChange);
-        //         appoint.appendChild(buttonWrap);
-        //         schedule.appendChild(appoint)
-        //         appoint.addEventListener("click",function(e){
-        //             const clicked = e.currentTarget.closest(".appointmentInfo");
-        //             if (!clicked) return;
-        //             // 현재 이미 선택된 요소
-        //             const currentlySelected = document.querySelector(".appointmentInfo.selected");
-        //             // 이미 선택된 걸 다시 클릭했으면 해제
-        //             if (currentlySelected === clicked) {
-        //                 clicked.classList.remove("selected");
-        //             } else { // 이외의 것을 선택하면 기존 선택된 것의 classList에서 selected를 제거
-        //                 if (currentlySelected) currentlySelected.classList.remove("selected");
-        //                     // 현재 선택한 것의 classList에 selected 클래스 추가
-        //                     clicked.classList.add("selected");
-        //                 }
-        //             })
-        //     }
-        // }
-        // change()
-    </script>
-    <script src = "../../static/js/schedule.js"></script>
+    {% endfor%} {% else %}
+    <p>등록된 일정이 없습니다.</p>
+    {% endif%}
+  </div>
+</div>
+
+<script src="../../static/js/schedule.js"></script>
 {% endblock %}
