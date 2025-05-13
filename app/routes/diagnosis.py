@@ -100,34 +100,40 @@ def phq9():
             responses.append(answer)
             total_score += answer
         
-        # 결과 해석
         result = {}
-        if total_score <= 4:
-            result['severity'] = '정상'
-            result['description'] = '우울증이 없는 상태입니다.'
-            result['recommendation'] = '현재 상태를 유지하세요.'
-            result['risk_level'] = 'low'
-        elif total_score <= 9:
-            result['severity'] = '가벼운 우울증'
-            result['description'] = '가벼운 우울 증상이 있습니다.'
-            result['recommendation'] = '자가 관리와 정기적인 기분 체크를 권장합니다.'
-            result['risk_level'] = 'low'
-        elif total_score <= 19:
-            result['severity'] = '중간 정도의 우울증'
-            result['description'] = '중간 정도의 우울 증상이 있습니다.'
-            result['recommendation'] = '전문가와 상담을 고려해보세요.'
-            result['risk_level'] = 'medium'
+        # 1단계 진단: 1번 또는 2번 문항에서 2점 또는 3점이 있는지 확인
+        if responses[0] >= 2 or responses[1] >= 2:
+            # 2단계(심각도)로 진행
+            if total_score <= 4:
+                result['severity'] = '정상'
+                result['description'] = '우울증이 없는 상태입니다.'
+                result['recommendation'] = '유의한 수준의 우울감이 시사되지 않습니다. <br>현재 상태를 유지하세요.'
+                result['risk_level'] = 'low'
+            elif total_score <= 9:
+                result['severity'] = '가벼운 우울증'
+                result['description'] = '가벼운 우울 증상이 있습니다.'
+                result['recommendation'] = '다소 경미한 수준의 우울감이 있으나 일상생활에 지장을 줄 정도는 아닙니다. <br>다만, 이러한 기분상태가 지속될 경우 개인의 신체적, 심리적 대처자원을 저하시킬 수 있습니다. <br>그러한 경우, 가까운 지역센터나 전문기관을 방문하시기 바랍니다.'
+                result['risk_level'] = 'low'
+            elif total_score <= 19:
+                result['severity'] = '중간 정도의 우울증'
+                result['description'] = '중간 정도의 우울 증상이 있습니다.'
+                result['recommendation'] = '중간 수준의 우울감이 시사됩니다. <br>이러한 높은 수준의 우울감은 흔히 신체적, 심리적 대처자원을 저하시키며 개인의 일상생활을 어렵게 만들기도 합니다. <br>가까운 지역센터나 전문기관을 방문하여 보다 상세한 평가와 도움을 받아보시기 바랍니다.'
+                result['risk_level'] = 'medium'
+            else:
+                result['severity'] = '심각한 우울증'
+                result['description'] = '심각한 우울 증상이 있습니다.'
+                result['recommendation'] = '심한 수준의 우울감이 시사됩니다. <br>전문기관의 치료적 개입과 평가가 요구됩니다.'
+                result['risk_level'] = 'high'
         else:
-            result['severity'] = '심각한 우울증'
-            result['description'] = '심각한 우울 증상이 있습니다.'
-            result['recommendation'] = '즉시 전문가의 도움을 받으세요.'
-            result['risk_level'] = 'high'
-        
+            # 우울증 아님
+            result['severity'] = '정상'
+            result['description'] = '우울증이 아닙니다.'
+            result['recommendation'] = '우울증의 기준에 부합하지 않습니다. 현재 상태를 유지하세요.'
+            result['risk_level'] = 'low'
         # 9번 문항(자살 생각) 체크
         if responses[8] >= 1:
             result['warning'] = '자살 생각이 있는 것으로 보입니다. 즉시 전문가의 도움을 받으세요.'
             result['risk_level'] = 'high'
-        
         # 결과 저장 (ASSESSMENT_HISTORY)
         if 'user_id' in session:
             save_assessment_history(
@@ -136,7 +142,6 @@ def phq9():
                 score=total_score,
                 data=responses
             )
-        
         # 세션에 결과 저장 (결과 페이지에서 사용)
         session['diagnosis_result'] = {
             'test_type': 'PHQ-9',
@@ -145,11 +150,11 @@ def phq9():
             'result': result,
             'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        
         # 위험도 한글 표기
         severity_map = {
             '정상': '정상',
             '가벼운 우울증': '경도 우울',
+            '경한 우울증': '경한 우울',
             '중간 정도의 우울증': '중간 정도의 우울',
             '심각한 우울증': '심한 우울'
         }
@@ -160,7 +165,6 @@ def phq9():
             'severity': severity_label,
             'recommendation': result['recommendation']
         })
-    
     # GET 요청 처리 (설문지 표시)
     return render_template('diagnosis/phq9.html', 
                           title='mindLog - PHQ-9 자가진단',
@@ -192,22 +196,22 @@ def cesd():
         if total_score < 16:
             result['severity'] = '정상'
             result['description'] = '우울증이 없는 상태입니다.'
-            result['recommendation'] = '현재 상태를 유지하세요.'
+            result['recommendation'] = '유의한 수준의 우울감이 시사되지 않습니다. <br>현재 상태를 유지하세요.'
             result['risk_level'] = 'low'
         elif total_score < 21:
             result['severity'] = '경도 우울증'
             result['description'] = '가벼운 우울 증상이 있습니다.'
-            result['recommendation'] = '자가 관리와 정기적인 기분 체크를 권장합니다.'
+            result['recommendation'] = '다소 경미한 수준의 우울감이 있습니다. <br>일상생활에 지장을 줄 정도는 아닙니다. <br>다만, 이러한 기분상태가 지속될 경우 개인의 신체적, 심리적 대처자원을 저하시킬 수 있습니다. <br>그러한 경우, 가까운 지역센터나 전문기관을 방문하시기 바랍니다.'
             result['risk_level'] = 'low'
         elif total_score < 25:
             result['severity'] = '중등도 우울증'
             result['description'] = '중간 정도의 우울 증상이 있습니다.'
-            result['recommendation'] = '전문가와 상담을 고려해보세요.'
+            result['recommendation'] = '중한 수준의 우울감이 시사됩니다. <br>이러한 높은 수준의 우울감은 흔히 신체적, 심리적 대처자원을 저하시키며 개인의 일상생활을 어렵게 만들기도 합니다. <br>가까운 지역센터나 전문기관을 방문하여 보다 상세한 평가와 도움을 받아보시기 바랍니다.'
             result['risk_level'] = 'medium'
         else:
             result['severity'] = '중증 우울증'
             result['description'] = '심한 우울 증상이 있습니다.'
-            result['recommendation'] = '전문가의 도움을 받는 것이 좋습니다.'
+            result['recommendation'] = '심한 수준의 우울감이 시사됩니다. <br>전문기관의 치료적 개입과 평가가 요구됩니다.'
             result['risk_level'] = 'high'
         
         # 결과 저장 (ASSESSMENT_HISTORY)
@@ -274,12 +278,12 @@ def cesd10():
         if total_score < 2:
             result['severity'] = '정상'
             result['description'] = '우울증이 없는 상태입니다.'
-            result['recommendation'] = '현재 상태를 유지하세요.'
+            result['recommendation'] = '우울 관련 정서적 문제를 호소하는 정도가 일반 사람들과 비슷한 수준입니다. <br>현재 상태를 유지하세요.'
             result['risk_level'] = 'low'
         elif total_score < 10:
             result['severity'] = '우울증'
             result['description'] = '유의미한 수준의 우울 증상이 있습니다.'
-            result['recommendation'] = '전문가와 상담을 고려해보세요.'
+            result['recommendation'] = '우울과 관련된 증상들을 유의한 수준으로 보고하였습니다. <br>스트레스가 가중되면, 우울 증상이 확산되고 평소에 비해 일상생활 기능이 저하될 수 있으므로, 주의가 필요합니다.'
             result['risk_level'] = 'medium'
         else:
             result['severity'] = '중증 우울증'

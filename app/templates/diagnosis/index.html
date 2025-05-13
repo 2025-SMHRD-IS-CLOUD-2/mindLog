@@ -1,257 +1,247 @@
-{% extends 'base.html' %}
-
-{% block styles %}
-    <link
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
-      rel="stylesheet"
-    />
-    <link
-      href="{{ url_for('static', filename='css/diagnosis.css') }}"
-      rel="stylesheet"
-    />
-    <script
-      src="{{ url_for('static', filename='js/diagnosis.js') }}"
-      defer
-    ></script>
-{% endblock %}
-
-{% block content %}
-  <div class="container">
-      <div class="info-row"></div>
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="survey3">PHQ-9</button>
-        <button class="tab-btn" data-tab="cesd">CES-D</button>
-        <button class="tab-btn" data-tab="survey2">CESD-10-D</button>
+{% extends 'base.html' %} {% block styles %}
+<link
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+  rel="stylesheet"
+/>
+<link
+  href="{{ url_for('static', filename='css/diagnosis.css') }}"
+  rel="stylesheet"
+/>
+<script
+  src="{{ url_for('static', filename='js/diagnosis.js') }}"
+  defer
+></script>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="info-row"></div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="survey3">PHQ-9</button>
+    <button class="tab-btn" data-tab="cesd">CES-D</button>
+    <button class="tab-btn" data-tab="survey2">CESD-10-D</button>
+  </div>
+  <!-- PHQ-9 설문 (9문항) -->
+  <div class="tab-content active" id="survey3">
+    <h1>역학연구를 위한 우울척도 (PHQ-9)</h1>
+    <form
+      id="phq-9-form"
+      action="{{ url_for('diagnosis.phq9') }}"
+      method="POST"
+    >
+      <div class="desc">
+        아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장
+        잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br />
+        한 문항도 빠짐없이 답해 주시기 바랍니다.
       </div>
-      <!-- PHQ-9 설문 (9문항) -->
-      <div class="tab-content active" id="survey3">
-        <h1>역학연구를 위한 우울척도 (PHQ-9)</h1>
-        <form
-          id="phq-9-form"
-          action="{{ url_for('diagnosis.phq9') }}"
-          method="POST"
-        >
-          <div class="desc">
-            아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을
-            가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br />
-            한 문항도 빠짐없이 답해 주시기 바랍니다.
-          </div>
-          {% for q in phq9_questions %}
-          <div class="survey-q">
-            <div class="q-title">
-              <span class="q-no">{{ q.number }}.</span> {{ q.text }}
-            </div>
-            <div class="choices">
-              {% for opt in q.options %}
-              <label class="choice-label">
-                <input
-                  type="radio"
-                  name="q{{ q.number }}"
-                  value="{{ opt.score }}"
-                  required
-                />
-                {{ opt.text }}
-              </label>
-              {% endfor %}
-            </div>
-          </div>
+      {% for q in phq9_questions %}
+      <div class="survey-q">
+        <div class="q-title">
+          <span class="q-no">{{ q.number }}.</span> {{ q.text }}
+        </div>
+        <div class="choices">
+          {% for opt in q.options %}
+          <label class="choice-label">
+            <input
+              type="radio"
+              name="q{{ q.number }}"
+              value="{{ opt.score }}"
+              required
+            />
+            {{ opt.text }}
+          </label>
           {% endfor %}
-          <div class="button-row">
-            <button type="submit">제출</button>
-            <button type="reset">초기화</button>
-          </div>
-          <div class="score-row" id="score-result-phq9"></div>
-        </form>
+        </div>
       </div>
-      <!-- CES-D 설문 (20문항) -->
-      <div class="tab-content" id="cesd">
-        <h1>역학연구를 위한 우울척도 (CES-D)</h1>
-        <form
-          id="cesd-form"
-          action="{{ url_for('diagnosis.cesd') }}"
-          method="POST"
-        >
-          <div class="desc">
-            아래에 문항을 잘 읽으시고, 지난 1주동안 당신이 느끼고 행동한 것을
-            가장 잘 나타낸다고 생각되는 문항에 V표를 하십시오.<br />
-            한 문항도 빠짐없이 답해 주시기 바랍니다.
-          </div>
-          {% for q in cesd_questions %}
-          <div class="survey-q">
-            <div class="q-title">
-              <span class="q-no">{{ q.number }}.</span> {{ q.text }}
-            </div>
-            <div class="choices">
-              {% for opt in q.options %}
-              <label class="choice-label">
-                <input
-                  type="radio"
-                  name="q{{ q.number }}"
-                  value="{{ opt.score }}"
-                  required
-                />
-                {{ opt.text }}
-              </label>
-              {% endfor %}
-            </div>
-          </div>
+      {% endfor %}
+      <div class="button-row">
+        <button type="submit">제출</button>
+        <button type="reset">초기화</button>
+      </div>
+      <div class="score-row" id="score-result-phq9"></div>
+    </form>
+  </div>
+  <!-- CES-D 설문 (20문항) -->
+  <div class="tab-content" id="cesd">
+    <h1>역학연구를 위한 우울척도 (CES-D)</h1>
+    <form id="cesd-form" action="{{ url_for('diagnosis.cesd') }}" method="POST">
+      <div class="desc">
+        아래에 문항을 잘 읽으시고, 지난 1주동안 당신이 느끼고 행동한 것을 가장
+        잘 나타낸다고 생각되는 문항에 V표를 하십시오.<br />
+        한 문항도 빠짐없이 답해 주시기 바랍니다.
+      </div>
+      {% for q in cesd_questions %}
+      <div class="survey-q">
+        <div class="q-title">
+          <span class="q-no">{{ q.number }}.</span> {{ q.text }}
+        </div>
+        <div class="choices">
+          {% for opt in q.options %}
+          <label class="choice-label">
+            <input
+              type="radio"
+              name="q{{ q.number }}"
+              value="{{ opt.score }}"
+              required
+            />
+            {{ opt.text }}
+          </label>
           {% endfor %}
-          <div class="button-row">
-            <button type="submit">제출</button>
-            <button type="reset">초기화</button>
-          </div>
-          <div class="score-row" id="score-result-cesd"></div>
-        </form>
+        </div>
       </div>
-      <!-- CESD-10-D 설문 (10문항) -->
-      <div class="tab-content" id="survey2">
-        <h1>역학연구를 위한 우울척도-단축형 (CESD-10-D)</h1>
-        <form
-          id="cesd10d-form"
-          action="{{ url_for('diagnosis.cesd10') }}"
-          method="POST"
-        >
-          <div class="desc">
-            아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을
-            가장 잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br />
-            한 문항도 빠짐없이 답해 주시기 바랍니다.
-          </div>
-          {% for q in cesd10d_questions %}
-          <div class="survey-q">
-            <div class="q-title">
-              <span class="q-no">{{ q.number }}.</span> {{ q.text }}
-            </div>
-            <div class="choices">
-              {% for opt in q.options %}
-              <label class="choice-label">
-                <input
-                  type="radio"
-                  name="q{{ q.number }}"
-                  value="{{ opt.score }}"
-                  required
-                />
-                {{ opt.text }}
-              </label>
-              {% endfor %}
-            </div>
-          </div>
+      {% endfor %}
+      <div class="button-row">
+        <button type="submit">제출</button>
+        <button type="reset">초기화</button>
+      </div>
+      <div class="score-row" id="score-result-cesd"></div>
+    </form>
+  </div>
+  <!-- CESD-10-D 설문 (10문항) -->
+  <div class="tab-content" id="survey2">
+    <h1>역학연구를 위한 우울척도-단축형 (CESD-10-D)</h1>
+    <form
+      id="cesd10d-form"
+      action="{{ url_for('diagnosis.cesd10') }}"
+      method="POST"
+    >
+      <div class="desc">
+        아래에 문항을 잘 읽으신 후, 지난 1주동안 당신이 느끼고 행동한 것을 가장
+        잘 나타낸다고 생각되는 답변에 O로 표시해 주십시오.<br />
+        한 문항도 빠짐없이 답해 주시기 바랍니다.
+      </div>
+      {% for q in cesd10d_questions %}
+      <div class="survey-q">
+        <div class="q-title">
+          <span class="q-no">{{ q.number }}.</span> {{ q.text }}
+        </div>
+        <div class="choices">
+          {% for opt in q.options %}
+          <label class="choice-label">
+            <input
+              type="radio"
+              name="q{{ q.number }}"
+              value="{{ opt.score }}"
+              required
+            />
+            {{ opt.text }}
+          </label>
           {% endfor %}
-          <div class="button-row">
-            <button type="submit">제출</button>
-            <button type="reset">초기화</button>
-          </div>
-          <div class="score-row" id="score-result-cesd10d"></div>
-        </form>
+        </div>
       </div>
-    </div>
-    <script>
-      // 설문 제출 처리
-      document
-        .getElementById("phq-9-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const data = {};
-          for (let [key, value] of formData.entries()) {
-            data[key] = parseInt(value);
+      {% endfor %}
+      <div class="button-row">
+        <button type="submit">제출</button>
+        <button type="reset">초기화</button>
+      </div>
+      <div class="score-row" id="score-result-cesd10d"></div>
+    </form>
+  </div>
+</div>
+<script>
+  // 설문 제출 처리
+  document
+    .getElementById("phq-9-form")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        data[key] = parseInt(value);
+      }
+
+      // 점수 계산
+      const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
+      const resultDiv = document.getElementById("score-result-phq9");
+      resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
+
+      // 서버로 데이터 전송
+      fetch(this.action, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><br><div class="severity">위험도: ${data.severity}</div><br><div class="recommendation">상담 제안: ${data.recommendation}</div>`;
           }
-
-          // 점수 계산
-          const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
-          const resultDiv = document.getElementById("score-result-phq9");
-          resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
-
-          // 서버로 데이터 전송
-          fetch(this.action, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><div class="severity">위험도: ${data.severity}</div><div class="recommendation">상담 제안: ${data.recommendation}</div>`;
-              }
-              alert("설문이 성공적으로 제출되었습니다.");
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("설문 제출 중 오류가 발생했습니다.");
-            });
+          alert("설문이 성공적으로 제출되었습니다.");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("설문 제출 중 오류가 발생했습니다.");
         });
+    });
 
-      document
-        .getElementById("cesd-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const data = {};
-          for (let [key, value] of formData.entries()) {
-            data[key] = parseInt(value);
+  document.getElementById("cesd-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const data = {};
+    for (let [key, value] of formData.entries()) {
+      data[key] = parseInt(value);
+    }
+
+    // 점수 계산
+    const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
+    const resultDiv = document.getElementById("score-result-cesd");
+    resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
+
+    // 서버로 데이터 전송
+    fetch(this.action, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><br><div class="severity">위험도: ${data.severity}</div><br><div class="recommendation">상담 제안: ${data.recommendation}</div>`;
+        }
+        alert("설문이 성공적으로 제출되었습니다.");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("설문 제출 중 오류가 발생했습니다.");
+      });
+  });
+
+  document
+    .getElementById("cesd10d-form")
+    .addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const data = {};
+      for (let [key, value] of formData.entries()) {
+        data[key] = parseInt(value);
+      }
+
+      // 점수 계산
+      const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
+      const resultDiv = document.getElementById("score-result-cesd10d");
+      resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
+
+      // 서버로 데이터 전송
+      fetch(this.action, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><br><div class="severity"><br>위험도: ${data.severity}</div><div class="recommendation"><br>상담 제안: ${data.recommendation}</div>`;
           }
-
-          // 점수 계산
-          const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
-          const resultDiv = document.getElementById("score-result-cesd");
-          resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
-
-          // 서버로 데이터 전송
-          fetch(this.action, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><div class="severity">위험도: ${data.severity}</div><div class="recommendation">상담 제안: ${data.recommendation}</div>`;
-              }
-              alert("설문이 성공적으로 제출되었습니다.");
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("설문 제출 중 오류가 발생했습니다.");
-            });
+          alert("설문이 성공적으로 제출되었습니다.");
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          alert("설문 제출 중 오류가 발생했습니다.");
         });
-
-      document
-        .getElementById("cesd10d-form")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const data = {};
-          for (let [key, value] of formData.entries()) {
-            data[key] = parseInt(value);
-          }
-
-          // 점수 계산
-          const totalScore = Object.values(data).reduce((a, b) => a + b, 0);
-          const resultDiv = document.getElementById("score-result-cesd10d");
-          resultDiv.innerHTML = `<div class="score">총점: ${totalScore}점</div>`;
-
-          // 서버로 데이터 전송
-          fetch(this.action, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              if (data.success) {
-                resultDiv.innerHTML = `<div class="score">총점: ${data.score}점</div><div class="severity">위험도: ${data.severity}</div><div class="recommendation">상담 제안: ${data.recommendation}</div>`;
-              }
-              alert("설문이 성공적으로 제출되었습니다.");
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-              alert("설문 제출 중 오류가 발생했습니다.");
-            });
-        });
-    </script>
+    });
+</script>
 {% endblock %}
