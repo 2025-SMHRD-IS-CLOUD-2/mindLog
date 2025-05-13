@@ -52,6 +52,7 @@
   width: 50px;
   font-size: 10px;
   text-align: center;
+  box-sizing: content-box;
 }
 
 @media (min-width: 768px) {
