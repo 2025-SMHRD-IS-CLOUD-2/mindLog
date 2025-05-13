@@ -13,7 +13,7 @@ bcrypt = Bcrypt()
 def login():
     """로그인 페이지"""
     if 'user_id' in session:
-        return redirect(url_for('main.dashboard'))
+        return jsonify({'success': True, 'redirect': url_for('main.dashboard')})
     
     # POST 요청 처리 (로그인 폼 제출)
     if request.method == 'POST':
@@ -26,8 +26,10 @@ def login():
         # 입력값 검증
         if not username or not password:
             print("[로그인 실패] 아이디 또는 비밀번호 미입력")  # 실패 로그
-            flash('아이디와 비밀번호를 모두 입력해주세요.', 'danger')
-            return render_template('auth/login.html', title='mindLog - 로그인')
+            return jsonify({
+                'success': False,
+                'message': '아이디와 비밀번호를 모두 입력해주세요.'
+            })
         
         # DB 연결
         conn = None
@@ -53,21 +55,24 @@ def login():
                     session['username'] = user['USER_ID']
                     session['logged_in'] = True
                     
-                    # 마지막 로그인 시간 업데이트 (불필요하므로 주석 처리)
-                    # update_sql = "UPDATE USERS SET LAST_LOGIN = %s WHERE USER_SEQ = %s"
-                    # cur.execute(update_sql, (datetime.now(), user['USER_SEQ']))
-                    # conn.commit()
-                    
                     print(f"[로그인 성공] 사용자: {username}")  # 성공 로그
-                    flash('로그인 되었습니다!', 'success')
                     next_page = request.args.get('next')
-                    return redirect(next_page) if next_page else redirect(url_for('main.dashboard'))
+                    return jsonify({
+                        'success': True,
+                        'redirect': next_page if next_page else url_for('main.dashboard')
+                    })
                 else:
                     print(f"[로그인 실패] 사용자: {username} - 아이디/비밀번호 불일치")  # 실패 로그
-                    flash('로그인 실패. 아이디와 비밀번호를 확인해주세요.', 'danger')
+                    return jsonify({
+                        'success': False,
+                        'message': '아이디와 비밀번호를 확인해주세요.'
+                    })
         except Exception as e:
             print(f"[로그인 오류] 사용자: {username} - {str(e)}")  # 오류 로그
-            flash(f'로그인 중 오류가 발생했습니다: {e}', 'danger')
+            return jsonify({
+                'success': False,
+                'message': f'로그인 중 오류가 발생했습니다: {str(e)}'
+            })
         finally:
             if conn:
                 conn.close()

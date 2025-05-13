@@ -28,6 +28,15 @@
               class="login-input"
               required
             />
+            <p
+              id="errorMessage"
+              style="
+                color: red;
+                margin-top: 10px;
+                font-size: 14px;
+                display: none;
+              "
+            ></p>
           </div>
           <div class="find-link">
             <a href="{{ url_for('auth.find_password') }}"
@@ -49,5 +58,33 @@
   document.getElementById("signupBtn").onclick = function () {
     location.href = "{{ url_for('auth.join') }}";
   };
+
+  document.getElementById("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch("{{ url_for('auth.login') }}", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          window.location.href =
+            data.redirect || "{{ url_for('main.dashboard') }}";
+        } else {
+          const errorMessage = document.getElementById("errorMessage");
+          errorMessage.textContent =
+            data.message || "아이디와 비밀번호를 확인해주세요";
+          errorMessage.style.display = "block";
+        }
+      })
+      .catch((error) => {
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.textContent = "로그인 중 오류가 발생했습니다";
+        errorMessage.style.display = "block";
+      });
+  });
 </script>
 {% endblock %}
