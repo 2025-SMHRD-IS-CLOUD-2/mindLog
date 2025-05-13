@@ -47,24 +47,22 @@
           onclick="location.href='{{ url_for('counseling.centers') }}'"
         >
           <img
-            src="{{ url_for('static', filename='assets/icons/calendar.svg') }}"
+            src="{{ url_for('static', filename='assets/icons/building.svg') }}"
             alt="상담센터"
           />
-          <span>상담센터</span>
+          <span>상담센터 안내</span>
+        </button>
+        <button
+          class="main-button calendar-button"
+          onclick="location.href = '{{url_for('counseling.schedule')}}'"
+        >
+          <img
+            src="{{ url_for('static', filename='assets/icons/calendar.svg') }}"
+            alt="캘린더"
+          />
+          <span>나의 상담 일정</span>
         </button>
       </div>
-    </section>
-
-    <section class="calendar-section" onclick = "location.href = '{{url_for('counseling.schedule')}}'" >
-      <h3>
-        <img
-          src="{{ url_for('static', filename='assets/icons/calendar.svg') }}"
-          alt="캘린더"
-          class="section-icon"
-        />
-        나의 상담 일정
-      </h3>
-      <div id="calendar"></div>
     </section>
 
     <section class="center-section">

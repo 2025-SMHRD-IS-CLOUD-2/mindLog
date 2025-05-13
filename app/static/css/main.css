@@ -167,18 +167,6 @@ h2 {
   text-align: center;
 }
 
-/* 캘린더 섹션 */
-.calendar-section {
-  margin: 40px 0;
-}
-#calendar {
-  min-height: 200px;
-  background: #f8f8f8;
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 12px;
-}
-
 /* 반응형 */
 @media screen and (max-width: 1024px) {
   .main-button {
