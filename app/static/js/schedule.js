@@ -46,7 +46,7 @@ function showSchedule(days) {
             // 예약한 센터와 시간 정보를 담은 요소 만들기기
             appoint.innerHTML = `<div class = 'center-info'><h3>${name}</h3><span class = 'center-info'>${address}</span>
                             <span class = 'center-info'>${tel}</span></div>
-                            <div class = 'time'><p>${appointDate.getFullYear()}년 ${appointDate.getMonth()}월 ${appointDate.getDate()}일</p>
+                            <div class = 'time'><p>${appointDate.getFullYear()}년 ${appointDate.getMonth()+1}월 ${appointDate.getDate()}일</p>
                             <p>${appointDate.getHours()}시 ${appointDate.getMinutes()}분</p></div>`;
 
             // 예약 취소 예약 변경 버튼 만들기기
