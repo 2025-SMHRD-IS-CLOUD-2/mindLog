@@ -97,8 +97,9 @@
     })
       .then((res) => res.json())
       .then((data) => {
-        selectedDay = new Date(selectDate.value);
-        
+        selectedDay = new Date(selectDate.value+"T23:59:59");
+        console.log(selectedDay)
+        console.log(date)
         for (let i = 9; i <= 18; i++) {
           if (i == 12 || i == 13) continue;
           if(selectedDay < date){
@@ -108,6 +109,12 @@
             continue;
           }
           if (data.length == 0) {
+            if(i <= date.getHours() && selectedDay.getFullYear() == date.getFullYear() && selectedDay.getMonth() == date.getMonth() && selectedDay.getDate() == date.getDate()){
+              let time = document.createElement("label");
+                time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00" disabled>${i}시`;
+                availableTime.appendChild(time);
+                continue;
+            }
             let time = document.createElement("label");
             time.innerHTML = `<input type = "radio" name = "appointmenttime" value = "${i}:00:00">${i}시`;
             availableTime.appendChild(time);

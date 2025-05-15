@@ -47,7 +47,7 @@ input[type = "radio"]{
     
 }
 label:has(input[type="radio"]:not(:checked):not(:disabled)):hover {
-    background-color: #00ff77;
+    background-color: #bdffdc;
 }
 input[type = "radio"]:disabled{
     appearance: none;
