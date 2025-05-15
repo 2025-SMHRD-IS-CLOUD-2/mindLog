@@ -1,10 +1,5 @@
 # 🧠 mindLog: 청소년 정신건강 AI 상담 챗봇
 
-### 🏆 GitHub 활동 통계 (조직 기준)
-![Yeongmin's GitHub Stats](https://github-readme-stats.vercel.app/api?username=black4305&show_icons=true)
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=black4305&layout=compact)
-![Trophy](https://github-profile-trophy.vercel.app/?username=black4305&theme=gruvbox&column=6)
-
 --
 
 ### 🧰 사용 기술 (Skills)
