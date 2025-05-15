@@ -2,8 +2,6 @@
 
 ### 🏆 GitHub 활동 통계 (조직 기준)
 ![2025-SMHRD-IS-CLOUD-2's GitHub Stats](https://github-readme-stats.vercel.app/api?username=2025-SMHRD-IS-CLOUD-2&show_icons=true)
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=2025-SMHRD-IS-CLOUD-2&show_icons=true&hide_border=true&title_color=004386&icon_color=004386&layout=compact)
-![trophy](https://github-profile-trophy.vercel.app/?username=2025-SMHRD-IS-CLOUD-2&theme=gruvbox&column=6)
 
 ---
 
